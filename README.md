@@ -1,8 +1,8 @@
 # daylite
 
 Daylite is the communications backbone for a number of processes running on the
-next-generation Botball robot controller from KIPR. It's design was inspired by
-ROS. Daylite, however, is simple to build, install, and use in comparison, with
+next-generation Botball robot controller from [KIPR](http://kipr.org/). It's design was inspired by
+[ROS](http://www.ros.org/). Daylite, however, is simple to build, install, and use in comparison, with
 no external dependencies or extra tooling required.
 
 Daylite is named after the song [Daylight by Andrew Rayel](https://www.youtube.com/watch?v=DV7YAkIaD44).
