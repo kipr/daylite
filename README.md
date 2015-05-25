@@ -1,7 +1,7 @@
 # daylite
 
 Daylite is the communications backbone for a number of processes running on the
-next-generation Botball robot controller from [KIPR](http://kipr.org/). It's design is inspired by
+next-generation Botball robot controller from [KIPR](http://kipr.org/). Its design is inspired by
 [ROS](http://www.ros.org/). Daylite, however, is simple to build, install, and use in comparison, with
 no external dependencies or extra tooling required. It also makes several different design choices.
 
