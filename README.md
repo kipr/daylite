@@ -18,7 +18,9 @@ or even over the internet. Nodes currently communicate over TCP, though this is 
 straightforward to change.
 
 Unlike ROS, Daylite is schemaless by design. Any well-formed data may be published
-to a topic. It is up to the recipient to discern a message's contents.
+to a topic. It is up to the recipient to discern a message's contents. This is not
+necessarily the intended use-case, however. It is merely to simplify library usage,
+dependencies, and build process.
 
 Daylite is designed to run on any OS with BSD-compliant sockets (including Windows, Mac OS, and Linux).
 It does not take advantage of any un-portable libraries or language features.
