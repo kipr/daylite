@@ -14,7 +14,8 @@ It was the song that was playing when I decided I needed to make this. Unfortuna
 Daylite is best represented as a fully connected graph of nodes. Nodes advertise
 topics that they listen to and publish data in the form of binary JSON to topics.
 Nodes may be in the same process as one-another, on the same machine, over a LAN,
-or even over the internet. Nodes currently communicate over TCP.
+or even over the internet. Nodes currently communicate over TCP, though this is relatively
+straightforward to change.
 
 Unlike ROS, Daylite is schemaless by design. Any well-formed data may be published
 to a topic. It is up to the recipient to discern a message's contents.
