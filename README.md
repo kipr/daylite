@@ -22,7 +22,7 @@ to a topic. It is up to the recipient to discern a message's contents. This is n
 necessarily the intended use-case, however. It is merely to simplify library usage,
 dependencies, and build process at the modest expense of safety and performance.
 
-Also unlike ROS, daylight does not have a well-defined master node. While there currently
+Also unlike ROS, Daylite does not have a well-defined master node. While there currently
 is no peer auto-discovery, once a node establishes a connection to another node it becomes
 a member of the entire daylite network graph. This allows the graph to grow rather organically.
 
