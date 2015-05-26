@@ -1,5 +1,5 @@
-#ifndef _DAYLIGHT_TCP_CLIENT_TRANSPORT_HPP_
-#define _DAYLIGHT_TCP_CLIENT_TRANSPORT_HPP_
+#ifndef _DAYLIGHT_TCP_TRANSPORT_HPP_
+#define _DAYLIGHT_TCP_TRANSPORT_HPP_
 
 #include "transport.hpp"
 #include "tcp_socket.hpp"
@@ -7,11 +7,12 @@
 
 namespace daylite
 {
-  class tcp_client_transport : public transport, private spinett
+  class tcp_transport : public transport, private spinett
   {
   public:
-    tcp_client_transport(const socket_address &address);
-    virtual ~tcp_client_transport();
+    tcp_transport(const socket_address &address);
+    tcp_transport(tcp_socket *const socket);
+    virtual ~tcp_transport();
     
     virtual void_result open();
     virtual void_result close();
@@ -19,13 +20,16 @@ namespace daylite
     virtual option<input_channel  *> input()  const;
     virtual option<output_channel *> output() const;
     
+    inline const socket_address &address() { return _address; }
+    inline tcp_socket *socket() const { return _socket; }
+    
   private:
     virtual void_result spin_update();
     
     socket_address _address;
     input_channel *_input_channel;
     output_channel *_output_channel;
-    tcp_socket _socket;
+    tcp_socket *_socket;
   };
 }
 

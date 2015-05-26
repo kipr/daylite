@@ -1,6 +1,10 @@
 #include "daylite/node.hpp"
-#include "daylite/tcp_server_transport.hpp"
-#include "daylite/tcp_client_transport.hpp"
+#include "daylite/tcp_server.hpp"
+#include "daylite/tcp_transport.hpp"
+#include "daylite/remote_node.hpp"
+
+#warning remove
+#include <iostream>
 
 using namespace daylite;
 
@@ -8,17 +12,17 @@ node::node(const std::string &name)
   : _name(name)
   , _server(0)
 {
-  
 }
 
 node::~node()
 {
+  _dave.remove_recv(this);
   end();
 }
 
 void_result node::start(const option<socket_address> &master, const option<socket_address> &us)
 {
-  _server = new tcp_server_transport(us.or_else(socket_address()));
+  _server = new tcp_server(us.or_else(socket_address()));
   void_result ret;
   
   if(!(ret = _server->open()))
@@ -30,16 +34,16 @@ void_result node::start(const option<socket_address> &master, const option<socke
   
   if(master.none()) return success();
   
-  transport *const client = new tcp_client_transport(master.unwrap());
-  if(!(ret = client->open()))
+  tcp_transport *const master_transport = new tcp_transport(master.unwrap());
+  if(!(ret = master_transport->open()))
   {
     delete _server;
     _server = 0;
-    delete client;
+    delete master_transport;
     return ret;
   }
   
-  _clients.push_back(client);
+  _remotes.push_back(new remote_node(master_transport, &_dave));
   
   return success();
 }
@@ -52,68 +56,41 @@ void_result node::end()
   delete _server;
   _server = 0;
   
-  for(auto client : _clients)
+  for(auto remote : _remotes)
   {
-    client->close();
-    delete client;
+    delete remote;
   }
   
-  _clients.clear();
+  _remotes.clear();
   
   return success();
 }
 
-void_result node::spin_update()
+void_result node::send(const topic &path, const packet &p)
 {
-  bool processed = false;
-  for(;;)
+  return _dave.send(path, p);
+}
+
+void_result node::recv(const topic &path, const packet &p)
+{
+  using namespace std;
+  cout << path.name() << ": " << reinterpret_cast<const char *>(p.data()) << endl;
+  
+  return success();
+}
+
+void node::server_connection(tcp_socket *const socket)
+{
+  _remotes.push_back(new remote_node(new tcp_transport(socket), &_dave));
+}
+
+void node::server_disconnection(tcp_socket *const socket)
+{
+  for(auto it = _remotes.begin(); it != _remotes.end();)
   {
-    for(auto c : _clients)
-    {
-      auto packet_result = c->input().unwrap()->read();
-      if(!packet_result) break;
-      processed = true;
-      process_packet(packet_result.unwrap());
-    }
-    if(!processed) break;
+    if((*it)->link()->socket() != socket) { ++it; continue; }
+    delete *it;
+    it = _remotes.erase(it);
   }
-  
-  return success();
 }
 
-void_result node::process_packet(const packet &p)
-{
-  if(!p.size()) return failure("Invalid packet size (0)");
-  
-  typedef void_result (node::*processor)(const packet &);
-  
-  static processor processors[] =
-  {
-    &node::add_remote_topic,
-    &node::remove_remote_topic,
-    &node::publication
-  };
-  
-  const uint8_t type = p.data()[0];
-  if(type >= sizeof(processors) / sizeof(processor)) return failure("Invalid type");
-  
-  return (this->*processors[type])(p);
-}
-
-void_result node::add_remote_topic(const packet &p)
-{
-  
-  return success();
-}
-
-void_result node::remove_remote_topic(const packet &p)
-{
-  
-  return success();
-}
-
-void_result node::publication(const packet &p)
-{
-  
-  return success();
-}

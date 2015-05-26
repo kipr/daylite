@@ -1,8 +1,4 @@
-#include "daylite/tcp_server_transport.hpp"
-
-#include "tcp_input_channel.hpp"
-#include "tcp_output_channel.hpp"
-#include "broadcast_output_channel.hpp"
+#include "daylite/tcp_server.hpp"
 
 #warning temp
 #include <iostream>
@@ -11,20 +7,18 @@
 
 using namespace daylite;
 
-tcp_server_transport::tcp_server_transport(const socket_address &address)
+tcp_server::tcp_server(const socket_address &address)
   : _address(address)
-  , _input_channel(0)
-  , _output_channel(0)
 {
   
 }
 
-tcp_server_transport::~tcp_server_transport()
+tcp_server::~tcp_server()
 {
   close();
 }
 
-void_result tcp_server_transport::open()
+void_result tcp_server::open()
 {
   void_result ret;
   
@@ -44,21 +38,12 @@ void_result tcp_server_transport::open()
     _socket.close();
     return ret;
   }
-
-  _input_channel  = new tcp_input_channel(&_socket);
-  _output_channel = new broadcast_output_channel();
   
   return success();
 }
 
-void_result tcp_server_transport::close()
+void_result tcp_server::close()
 {
-  delete _input_channel;
-  _input_channel = 0;
-  
-  delete _output_channel;
-  _output_channel = 0;
-  
   for(auto client : _clients)
   {
     client->close();
@@ -70,17 +55,24 @@ void_result tcp_server_transport::close()
   return success();
 }
 
-option<input_channel *>  tcp_server_transport::input()  const
+void_result tcp_server::add_tcp_server_listener(tcp_server_listener *const listener)
 {
-  return _input_channel ? some(_input_channel) : none<input_channel *>();
+  _listeners.push_back(listener);
+  return success();
 }
 
-option<output_channel *> tcp_server_transport::output() const
+void_result tcp_server::remove_tcp_server_listener(tcp_server_listener *const listener)
 {
-  return _output_channel ? some(_output_channel) : none<output_channel *>();
+  for(auto it = _listeners.begin(); it != _listeners.end();)
+  {
+    if(*it != listener) { ++it; continue; }
+    it = _listeners.erase(it);
+  }
+  
+  return success();
 }
 
-void_result tcp_server_transport::spin_update()
+void_result tcp_server::spin_update()
 {
   // Detect disconnects
   for(auto it = _clients.begin(); it != _clients.end();)
@@ -95,7 +87,9 @@ void_result tcp_server_transport::spin_update()
     if(!ret || ret.unwrap() > 0) { ++it; continue; }
     
     std::cout << "client disconnected" << std::endl;
-    reinterpret_cast<broadcast_output_channel *>(_output_channel)->remove_output_channel(client);
+    
+    for(auto listener : _listeners) listener->server_disconnection(client);
+    
     client->close();
     delete client;
     
@@ -111,7 +105,7 @@ void_result tcp_server_transport::spin_update()
   client->set_blocking(false);
   _clients.push_back(client);
   
-  reinterpret_cast<broadcast_output_channel *>(_output_channel)->add_output_channel(new tcp_output_channel(client), client);
+  for(auto listener : _listeners) listener->server_connection(client);
   
   return success();
 }

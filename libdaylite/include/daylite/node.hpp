@@ -8,16 +8,19 @@
 #include "result.hpp"
 #include "option.hpp"
 #include "socket_address.hpp"
-#include "transport.hpp"
+
+#include "mailman.hpp"
 
 #include "spinner.hpp"
+#include "tcp_server.hpp"
 
 #include <vector>
-#include <unordered_map>
 
 namespace daylite
 {
-  class node : private spinett
+  class remote_node;
+  
+  class node : private tcp_server_listener
   {
   public:
     node(const std::string &name);
@@ -28,24 +31,22 @@ namespace daylite
     void_result end();
     
     inline const std::string &name() const { return _name; }
+    inline const mailman *dave() const { return &_dave; }
+    inline mailman *dave() { return &_dave; }
+    
+    void_result send(const topic &path, const packet &p);
+    void_result recv(const topic &path, const packet &p);
     
   private:
-    virtual void_result spin_update();
     
-    void_result process_packet(const packet &p);
-    
-    void_result add_remote_topic(const packet &p);
-    void_result remove_remote_topic(const packet &p);
-    
-    void_result publication(const packet &p);
-    
+    virtual void server_connection(tcp_socket *const socket);
+    virtual void server_disconnection(tcp_socket *const socket);
     
     std::string _name;
+    mailman _dave;
     
-    transport *_server;
-    std::vector<transport *> _clients;
-    
-    // std::unordered_map<topic, std::vector<transport *>> _client_routes;
+    tcp_server *_server;
+    std::vector<remote_node *> _remotes;
   };
 }
 

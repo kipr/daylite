@@ -1,12 +1,13 @@
 #ifndef _DAYLIGHT_TCP_SOCKET_HPP_
 #define _DAYLIGHT_TCP_SOCKET_HPP_
 
-#include <cstdint>
-#include <cstring>
-
 #include "socket_address.hpp"
 #include "result.hpp"
 #include "option.hpp"
+
+#include <cstdint>
+#include <cstring>
+#include <tuple>
 
 namespace daylite
 {
@@ -25,7 +26,7 @@ namespace daylite
     void_result listen(const uint32_t queue_size);
     result<tcp_socket *> accept();
     
-    
+    inline const option<socket_address> &associated_address() const { return _associated_address; }
     
     result<bool> blocking() const;
     void_result set_blocking(const bool blocking);
@@ -43,8 +44,9 @@ namespace daylite
     inline option<int> fd() const { return _fd < 0 ? none<int>() : some(_fd); }
     
   private:
-    tcp_socket(int fd);
+    tcp_socket(int fd, const option<socket_address> &assoc = none<socket_address>());
     int _fd;
+    option<socket_address> _associated_address;
   };
 }
 

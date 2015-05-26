@@ -36,6 +36,11 @@ namespace
     return some(ret);
   }
   
+  option<socket_address> sockaddr_to_socket_address(const sockaddr_in &address)
+  {
+    return some(socket_address(inet_ntoa(address.sin_addr), address.sin_port));
+  }
+  
   template<typename T>
   void_result get_std_error(const T value)
   {
@@ -50,6 +55,7 @@ namespace
 }
 
 tcp_socket::tcp_socket()
+  : _associated_address(none<socket_address>())
 {
   
 }
@@ -69,6 +75,7 @@ void tcp_socket::close()
   if(_fd < 0) return;
   ::close(_fd);
   _fd = -1;
+  _associated_address = none<socket_address>();
 }
 
 void_result tcp_socket::bind(const socket_address &address)
@@ -78,7 +85,9 @@ void_result tcp_socket::bind(const socket_address &address)
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
   
-  return get_std_error(::bind(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  void_result ret = get_std_error(::bind(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  if(ret) _associated_address = some(address);
+  return ret;
 }
 
 void_result tcp_socket::connect(const socket_address &address)
@@ -88,7 +97,9 @@ void_result tcp_socket::connect(const socket_address &address)
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
   
-  return get_std_error(::connect(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  void_result ret = get_std_error(::connect(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  if(ret) _associated_address = some(address);
+  return ret;
 }
 
 void_result tcp_socket::listen(const uint32_t queue_size)
@@ -103,7 +114,7 @@ result<tcp_socket *> tcp_socket::accept()
   socklen_t len;
   int fd = ::accept(_fd, reinterpret_cast<sockaddr *>(&addr), &len);
   if(fd < 0) return failure<tcp_socket *>(strerror(errno), errno);
-  return success(new tcp_socket(fd));
+  return success(new tcp_socket(fd, sockaddr_to_socket_address(addr)));
 }
 
 result<bool> tcp_socket::blocking() const
@@ -152,7 +163,8 @@ option<uint16_t> tcp_socket::port() const
   return some(addr.sin_port);
 }
 
-tcp_socket::tcp_socket(int fd)
+tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)
   : _fd(fd)
+  , _associated_address(assoc)
 {
 }
