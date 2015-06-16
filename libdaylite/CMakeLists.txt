@@ -7,10 +7,6 @@ set(INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 file(GLOB LIBDAYLITE_INCLUDES ${INCLUDE}/daylite/*)
 file(GLOB LIBDAYLITE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 
-# for the dllimport/dllexport switch
-add_definitions(-DBUILD_DAYLITE_DLL)
-
-
 ################################################################################
 #   Include/link directories                                                   #
 ################################################################################
@@ -24,6 +20,9 @@ if(WIN32)
 endif()
 
 target_link_libraries(daylite ${LIBRARIES})
+
+# for the dllimport/dllexport switch
+set_target_properties(daylite PROPERTIES COMPILE_FLAGS -DBUILD_DAYLITE_DLL)
 
 ################################################################################
 #   Tests                                                                      #
