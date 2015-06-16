@@ -1,6 +1,6 @@
 #ifndef _DAYLITE_NODE_HPP_
 #define _DAYLITE_NODE_HPP_
-
+#include "compat.hpp"
 #include "topic.hpp"
 #include "publisher.hpp"
 #include "subscriber.hpp"
@@ -20,7 +20,7 @@ namespace daylite
 {
   class remote_node;
   
-  class node : private tcp_server_listener
+  class DLL_EXPORT node : private tcp_server_listener
   {
   public:
     node(const std::string &name);

@@ -1,13 +1,14 @@
 #ifndef _DAYLIGHT_TCP_TRANSPORT_HPP_
 #define _DAYLIGHT_TCP_TRANSPORT_HPP_
 
+#include "compat.hpp"
 #include "transport.hpp"
 #include "tcp_socket.hpp"
 #include "spinner.hpp"
 
 namespace daylite
 {
-  class tcp_transport : public transport, private spinett
+  class DLL_EXPORT tcp_transport : public transport, private spinett
   {
   public:
     tcp_transport(const socket_address &address);

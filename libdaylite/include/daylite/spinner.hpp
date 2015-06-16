@@ -1,13 +1,14 @@
 #ifndef _DAYLITE_SPINNER_HPP_
 #define _DAYLITE_SPINNER_HPP_
 
+#include "compat.hpp"
 #include "result.hpp"
 
 #include <vector>
 
 namespace daylite
 {
-  class spinett
+  class DLL_EXPORT spinett
   {
   public:
     spinett();
@@ -16,7 +17,7 @@ namespace daylite
     virtual void_result spin_update() = 0;
   };
   
-  class spinner
+  class DLL_EXPORT spinner
   {
   public:
     friend class spinett;

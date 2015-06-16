@@ -3,14 +3,23 @@
 
 #include <cstring>
 
+#ifdef WIN32
+#define _WIN32_WINNT 0x0501
+#define NOMINMAX
+#include <winsock2.h>
+#include <winsock.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+typedef LONG_PTR ssize_t;
+#else
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
+#include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <errno.h>
+#endif
+
 
 using namespace daylite;
 
@@ -28,10 +37,28 @@ namespace
  
     if(ret.sin_addr.s_addr != INADDR_NONE) return some(ret);
     
+#ifdef WIN32
+    struct addrinfo* result = NULL;
+    auto ret_val = getaddrinfo(address.host().c_str(), NULL, NULL, &result);
+    if(ret_val != 0)
+    {
+      freeaddrinfo(result);
+      return none<sockaddr_in>();
+    }
+
+    if (NULL == result)
+    {
+      return none<sockaddr_in>();
+    }
+
+    memcpy(&ret.sin_addr, result->ai_addr, sizeof(ret.sin_addr));
+    freeaddrinfo(result);
+#else
     hostent *host = gethostbyname(address.host().c_str());
     if(!host) return none<sockaddr_in>();
   
     memcpy(&ret.sin_addr, host->h_addr, sizeof(ret.sin_addr));
+#endif
     
     return some(ret);
   }
@@ -55,9 +82,9 @@ namespace
 }
 
 tcp_socket::tcp_socket()
-  : _associated_address(none<socket_address>())
+  : _associated_address(none<socket_address>()), _blocking(true)
 {
-  
+
 }
 
 tcp_socket::~tcp_socket()
@@ -73,7 +100,11 @@ void_result tcp_socket::open()
 void tcp_socket::close()
 {
   if(_fd < 0) return;
+#ifdef WIN32
+  closesocket(_fd);
+#else
   ::close(_fd);
+#endif
   _fd = -1;
   _associated_address = none<socket_address>();
 }
@@ -119,10 +150,15 @@ result<tcp_socket *> tcp_socket::accept()
 
 result<bool> tcp_socket::blocking() const
 {
-  if(_fd < 0) return failure("tcp_socket not open");
+  if (_fd < 0) return failure("tcp_socket not open");
+
+#ifdef WIN32
+  return success<bool>(_blocking);
+#else
   int flags = fcntl(_fd, F_GETFL, 0);
   if(flags < 0) return get_std_error();
   return success<bool>(!(flags & O_NONBLOCK));
+#endif
 }
 
 void_result tcp_socket::set_blocking(const bool blocking)
@@ -130,8 +166,9 @@ void_result tcp_socket::set_blocking(const bool blocking)
    if(_fd < 0) return failure("tcp_socket not open");
 
 #ifdef WIN32
-   uint64_t mode = blocking ? 0 : 1;
-   return ioctlsocket(_fd, FIONBIO, &mode) == 0;
+   u_long mode = blocking ? 0 : 1;
+   _blocking = blocking;
+   return success<bool>(ioctlsocket(_fd, FIONBIO, &mode) == 0);
 #else
    int flags = fcntl(_fd, F_GETFL, 0);
    if(flags < 0) return get_std_error();

@@ -3,9 +3,11 @@
 
 #include <cstdint>
 
+#include "compat.hpp"
+
 namespace daylite
 {
-  class packet
+  class DLL_EXPORT packet
   {
   public:
     packet(const char *const str);
