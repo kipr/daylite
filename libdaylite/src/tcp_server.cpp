@@ -1,7 +1,5 @@
+#include "daylite/console.hpp"
 #include "daylite/tcp_server.hpp"
-
-#warning temp
-#include <iostream>
 
 #define LISTEN_QUEUE_SIZE (10U)
 
@@ -10,7 +8,7 @@ using namespace daylite;
 tcp_server::tcp_server(const socket_address &address)
   : _address(address)
 {
-  
+
 }
 
 tcp_server::~tcp_server()
@@ -21,7 +19,7 @@ tcp_server::~tcp_server()
 void_result tcp_server::open()
 {
   void_result ret;
-  
+
   if(!(ret = _socket.open())) return ret;
   if(!(ret = _socket.set_blocking(false)))
   {
@@ -38,7 +36,7 @@ void_result tcp_server::open()
     _socket.close();
     return ret;
   }
-  
+
   return success();
 }
 
@@ -49,9 +47,9 @@ void_result tcp_server::close()
     client->close();
     delete client;
   }
-  
+
   _socket.close();
-  
+
   return success();
 }
 
@@ -68,7 +66,7 @@ void_result tcp_server::remove_tcp_server_listener(tcp_server_listener *const li
     if(*it != listener) { ++it; continue; }
     it = _listeners.erase(it);
   }
-  
+
   return success();
 }
 
@@ -78,34 +76,34 @@ void_result tcp_server::spin_update()
   for(auto it = _clients.begin(); it != _clients.end();)
   {
     auto client = *it;
-    
+
     uint8_t tmp[1];
     result<size_t> ret = client->recv(tmp, sizeof(tmp), tcp_socket::comm_peek);
-    
+
     // Recv will return no error and ret == 0 when a client disconnects
     // if there's still a connection but no data, it will return the EAGAIN error.
     if(!ret || ret.unwrap() > 0) { ++it; continue; }
-    
-    std::cout << "client disconnected" << std::endl;
-    
+
+    DAYLITE_DEBUG_STREAM("client disconnected");
+
     for(auto listener : _listeners) listener->server_disconnection(client);
-    
+
     client->close();
     delete client;
-    
+
     it = _clients.erase(it);
   }
-  
+
   result<tcp_socket *> client_result = _socket.accept();
   if(!client_result) return success();
-  
-  std::cout << "Got client" << std::endl;
-  
+
+  DAYLITE_DEBUG_STREAM("Got client");
+
   tcp_socket *client = client_result.unwrap();
   client->set_blocking(false);
   _clients.push_back(client);
-  
+
   for(auto listener : _listeners) listener->server_connection(client);
-  
+
   return success();
 }

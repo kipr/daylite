@@ -1,10 +1,8 @@
 #include "daylite/node.hpp"
+#include "daylite/console.hpp"
 #include "daylite/tcp_server.hpp"
 #include "daylite/tcp_transport.hpp"
 #include "daylite/remote_node.hpp"
-
-#warning remove
-#include <iostream>
 
 using namespace daylite;
 
@@ -73,8 +71,7 @@ void_result node::send(const topic &path, const packet &p)
 
 void_result node::recv(const topic &path, const packet &p)
 {
-  using namespace std;
-  cout << path.name() << ": " << reinterpret_cast<const char *>(p.data()) << endl;
+  DAYLITE_DEBUG_STREAM(path.name() << ": " << reinterpret_cast<const char *>(p.data()));
   
   return success();
 }
