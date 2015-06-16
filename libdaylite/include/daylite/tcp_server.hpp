@@ -11,8 +11,8 @@ namespace daylite
   class tcp_server_listener
   {
   public:
-    virtual void server_connection(tcp_socket *client) = 0;
-    virtual void server_disconnection(tcp_socket *client) = 0;
+    virtual void server_connection(tcp_socket *const client) = 0;
+    virtual void server_disconnection(tcp_socket *const client) = 0;
   };
   
   class tcp_server : private spinett

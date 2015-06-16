@@ -179,14 +179,14 @@ void_result tcp_socket::set_blocking(const bool blocking)
 
 result<size_t> tcp_socket::send(const uint8_t *const data, const size_t size, const comm_flags flags)
 {
-  ssize_t ret = ::send(_fd, data, size, flags == comm_peek ? MSG_PEEK : 0);
+  ssize_t ret = ::send(_fd, (char*)data, size, flags == comm_peek ? MSG_PEEK : 0);
   if(ret < 0) return failure<size_t>(strerror(errno), errno);
   return success<size_t>(ret);
 }
 
 result<size_t> tcp_socket::recv(uint8_t *const data, const size_t size, const comm_flags flags)
 {
-  ssize_t ret = ::recv(_fd, data, size, flags == comm_peek ? MSG_PEEK : 0);
+  ssize_t ret = ::recv(_fd, (char*)data, size, flags == comm_peek ? MSG_PEEK : 0);
   if(ret < 0) return failure<size_t>(strerror(errno), errno);
   return success<size_t>(ret);
 }
