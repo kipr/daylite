@@ -1,6 +1,7 @@
 #ifndef _DAYLITE_MAILMAN_HPP_
 #define _DAYLITE_MAILMAN_HPP_
 
+#include "compat.hpp"
 #include "result.hpp"
 #include "packet.hpp"
 #include "topic.hpp"
@@ -13,7 +14,7 @@ namespace daylite
   class node;
   class remote_node;
   
-  class mailman
+  class DLL_EXPORT mailman
   {
   public:
     friend class node;
@@ -34,6 +35,9 @@ namespace daylite
     void_result send(const topic &path, const packet &p);
     
   private:
+#pragma warning(push)
+#pragma warning(disable: 4251) /* Ignore STL DLL export warnings; Can be ignored as they are not exposed by inline functions */
+
     void_result add_recv(const topic &path, node *const local);
     void_result remove_recv(node *const local);
     
@@ -45,6 +49,8 @@ namespace daylite
     
     std::unordered_map<remote_node *, std::vector<topic>> _remote_topics;
     std::unordered_map<topic, std::vector<remote_node *>> _topic_remotes;
+
+#pragma warning(pop)
   };
 }
 

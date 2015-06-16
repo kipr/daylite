@@ -19,6 +19,10 @@
 namespace daylite
 {
   class remote_node;
+
+  // DLL-Export STL templates (MS Article 168958)
+  EXPIMP_TEMPLATE template class DLL_EXPORT std::vector<remote_node *>;
+  EXPIMP_TEMPLATE template class DLL_EXPORT std::basic_string<char>;
   
   class DLL_EXPORT node : private tcp_server_listener
   {
@@ -38,10 +42,9 @@ namespace daylite
     void_result recv(const topic &path, const packet &p);
     
   private:
-    
     virtual void server_connection(tcp_socket *const socket);
     virtual void server_disconnection(tcp_socket *const socket);
-    
+
     std::string _name;
     mailman _dave;
     

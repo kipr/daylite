@@ -1,6 +1,7 @@
 #ifndef _DAYLITE_TRANSPORT_HPP_
 #define _DAYLITE_TRANSPORT_HPP_
 
+#include "compat.hpp"
 #include "input_channel.hpp"
 #include "output_channel.hpp"
 #include "option.hpp"
@@ -8,7 +9,7 @@
 
 namespace daylite
 {
-  class transport
+  class DLL_EXPORT transport
   {
   public:
     virtual ~transport() {}

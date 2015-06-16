@@ -4,11 +4,15 @@
 #include <cstdint>
 #include <string>
 
+#include "daylite/compat.hpp"
 #include "daylite/socket_address.hpp"
 
 namespace daylite
 {
-  class socket_address
+  // DLL-Export STL templates (MS Article 168958)
+  EXPIMP_TEMPLATE template class DLL_EXPORT std::basic_string<char>;
+
+  class DLL_EXPORT socket_address
   {
   public:
     inline socket_address(const std::string &host, const uint16_t port) : _host(host), _port(port) {}

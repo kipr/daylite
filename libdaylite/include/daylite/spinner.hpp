@@ -16,6 +16,9 @@ namespace daylite
     
     virtual void_result spin_update() = 0;
   };
+
+  // DLL-Export STL templates (MS Article 168958)
+  EXPIMP_TEMPLATE template class DLL_EXPORT std::vector<spinett *>;
   
   class DLL_EXPORT spinner
   {
@@ -41,7 +44,7 @@ namespace daylite
     
     void_result register_spinett(spinett *const sp);
     void_result unregister_spinett(spinett *const sp);
-    
+
     std::vector<spinett *> _spinetts;
     
     static spinner _singleton;

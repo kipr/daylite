@@ -5,9 +5,10 @@
 #define D_INLINE __inline
 #ifdef BUILD_DAYLITE_DLL
 #define DLL_EXPORT __declspec(dllexport)
+#define EXPIMP_TEMPLATE
 #else
 #define DLL_EXPORT __declspec(dllimport)
-#error 'yay'
+#define EXPIMP_TEMPLATE extern
 #endif
 #else
 #define D_INLINE inline
