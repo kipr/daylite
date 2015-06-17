@@ -41,7 +41,7 @@ void_result node::start(const option<socket_address> &master, const option<socke
     return ret;
   }
   
-  _remotes.push_back(new remote_node(master_transport, &_dave));
+  _remotes.push_back(new remote_node(std::unique_ptr<transport>(master_transport), &_dave));
   
   return success();
 }
@@ -78,14 +78,14 @@ void_result node::recv(const topic &path, const packet &p)
 
 void node::server_connection(tcp_socket *const socket)
 {
-  _remotes.push_back(new remote_node(new tcp_transport(socket), &_dave));
+  _remotes.push_back(new remote_node(std::unique_ptr<transport>(new tcp_transport(socket)), &_dave));
 }
 
 void node::server_disconnection(tcp_socket *const socket)
 {
   for(auto it = _remotes.begin(); it != _remotes.end();)
   {
-    if((*it)->link()->socket() != socket) { ++it; continue; }
+    if(dynamic_cast<tcp_transport*>((*it)->link())->socket() != socket) { ++it; continue; }
     delete *it;
     it = _remotes.erase(it);
   }

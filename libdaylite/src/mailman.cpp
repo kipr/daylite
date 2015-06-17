@@ -54,7 +54,7 @@ void_result mailman::send(const topic &path, const packet &p)
   
   packet pack(packed_data, packed_size);
   
-  for(auto remote : it->second) remote->link()->output().unwrap()->write(pack);
+  for(auto remote : it->second) remote->send(pack);
   
   return success();
 }

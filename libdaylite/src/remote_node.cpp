@@ -4,15 +4,15 @@
 
 using namespace daylite;
 
-remote_node::remote_node(tcp_transport *const link, mailman *const dave)
-  : _link(link)
+remote_node::remote_node(std::unique_ptr<transport> link, mailman *const dave)
+  : _link(std::move(link))
   , _dave(dave)
 {
 }
 
-remote_node::~remote_node()
+void_result remote_node::send(const packet &p)
 {
-  delete _link;
+  return _link->output().unwrap()->write(p);
 }
 
 void_result remote_node::spin_update()
