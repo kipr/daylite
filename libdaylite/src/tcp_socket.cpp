@@ -20,6 +20,7 @@ typedef LONG_PTR ssize_t;
 #include <unistd.h>
 #endif
 
+#include "daylite/console.hpp"
 
 using namespace daylite;
 
@@ -84,12 +85,23 @@ namespace
 tcp_socket::tcp_socket()
   : _associated_address(none<socket_address>()), _blocking(true)
 {
-
+#ifdef WIN32
+  WSADATA wsa;
+  auto error = WSAStartup(MAKEWORD(2, 2), &wsa);
+  if(error)
+  {
+    DAYLITE_ERROR_STREAM("WSAStartup failed! Code: " << error);
+  }
+#endif
 }
 
 tcp_socket::~tcp_socket()
 {
   close();
+
+#ifdef WIN32
+  WSACleanup();
+#endif
 }
 
 void_result tcp_socket::open()
@@ -142,7 +154,7 @@ void_result tcp_socket::listen(const uint32_t queue_size)
 result<tcp_socket *> tcp_socket::accept()
 {
   sockaddr_in addr;
-  socklen_t len;
+  socklen_t len = sizeof(sockaddr);
   int fd = ::accept(_fd, reinterpret_cast<sockaddr *>(&addr), &len);
   if(fd < 0) return failure<tcp_socket *>(strerror(errno), errno);
   return success(new tcp_socket(fd, sockaddr_to_socket_address(addr)));
