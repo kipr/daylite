@@ -31,8 +31,6 @@ namespace daylite
     virtual void_result spin_update();
     
     socket_address _address;
-    input_channel *_input_channel;
-    output_channel *_output_channel;
     tcp_socket _socket;
     std::vector<tcp_socket *> _clients;
     
