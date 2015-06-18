@@ -17,9 +17,6 @@ namespace daylite
   class DLL_EXPORT mailman
   {
   public:
-    friend class node;
-    friend class remote_node;
-    
     mailman();
     
     /**
@@ -33,17 +30,16 @@ namespace daylite
      * Delivered to remote nodes.
      */
     void_result send(const topic &path, const packet &p);
+
+    void_result add_recv(const topic &path, node *const local);
+    void_result remove_recv(node *const local);
+
+    void_result add_send(const topic &path, remote_node *const remote);
+    void_result remove_send(remote_node *const remote);
     
   private:
 #pragma warning(push)
 #pragma warning(disable: 4251) /* Ignore STL DLL export warnings; Can be ignored as they are not exposed by inline functions */
-
-    void_result add_recv(const topic &path, node *const local);
-    void_result remove_recv(node *const local);
-    
-    void_result add_send(const topic &path, remote_node *const remote);
-    void_result remove_send(remote_node *const remote);
-    
     std::unordered_map<node *, std::vector<topic>> _local_topics;
     std::unordered_map<topic, std::vector<node *>> _topic_locals;
     
