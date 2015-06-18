@@ -22,16 +22,16 @@ void_result node::start(const option<socket_address> &master, const option<socke
 {
   _server = new tcp_server(us.or_else(socket_address()));
   void_result ret;
-  
+
   if(!(ret = _server->open()))
   {
     delete _server;
     _server = 0;
     return ret;
   }
-  
+
   if(master.none()) return success();
-  
+
   tcp_transport *const master_transport = new tcp_transport(master.unwrap());
   if(!(ret = master_transport->open()))
   {
@@ -40,27 +40,28 @@ void_result node::start(const option<socket_address> &master, const option<socke
     delete master_transport;
     return ret;
   }
-  
-  _remotes.push_back(new remote_node(std::unique_ptr<transport>(master_transport), &_dave));
-  
+  auto master_node = new remote_node(std::unique_ptr<transport>(master_transport));
+  master_node->register_recv((uint32_t)&_dave, [this](const packet& p) { _dave.recv(p); });
+  _remotes.push_back(master_node);
+
   return success();
 }
 
 void_result node::end()
 {
   if(!_server) return failure("Node not started");
-  
+
   _server->close();
   delete _server;
   _server = 0;
-  
+
   for(auto remote : _remotes)
   {
     delete remote;
   }
-  
+
   _remotes.clear();
-  
+
   return success();
 }
 
@@ -72,13 +73,15 @@ void_result node::send(const topic &path, const packet &p)
 void_result node::recv(const topic &path, const packet &p)
 {
   DAYLITE_DEBUG_STREAM(path.name() << ": " << reinterpret_cast<const char *>(p.data()));
-  
+
   return success();
 }
 
 void node::server_connection(tcp_socket *const socket)
 {
-  _remotes.push_back(new remote_node(std::unique_ptr<transport>(new tcp_transport(socket)), &_dave));
+  auto remote = new remote_node(std::unique_ptr<transport>(new tcp_transport(socket)));
+  remote->register_recv((uint32_t)&_dave, [this](const packet& p) { _dave.recv(p); });
+  _remotes.push_back(remote);
 }
 
 void node::server_disconnection(tcp_socket *const socket)
