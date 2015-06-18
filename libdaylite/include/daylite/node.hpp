@@ -1,24 +1,27 @@
 #ifndef _DAYLITE_NODE_HPP_
 #define _DAYLITE_NODE_HPP_
+
 #include "compat.hpp"
 #include "topic.hpp"
+#include "packet.hpp"
 #include "publisher.hpp"
 #include "subscriber.hpp"
-
+#include "tcp_server_listener.hpp"
 #include "result.hpp"
 #include "option.hpp"
 #include "socket_address.hpp"
 
-#include "mailman.hpp"
-
 #include "spinner.hpp"
-#include "tcp_server.hpp"
 
+#include <memory>
 #include <vector>
 
 namespace daylite
 {
   class remote_node;
+  class mailman;
+  class tcp_socket;
+  class tcp_server;
 
   // DLL-Export STL templates (MS Article 168958)
   EXPIMP_TEMPLATE template class DLL_EXPORT std::vector<remote_node *>;
@@ -35,8 +38,6 @@ namespace daylite
     void_result end();
     
     inline const std::string &name() const { return _name; }
-    inline const mailman *dave() const { return &_dave; }
-    inline mailman *dave() { return &_dave; }
     
     void_result send(const topic &path, const packet &p);
     void_result recv(const topic &path, const packet &p);
@@ -46,9 +47,9 @@ namespace daylite
     virtual void server_disconnection(tcp_socket *const socket);
 
     std::string _name;
-    mailman _dave;
+    std::unique_ptr<mailman> _dave;
     
-    tcp_server *_server;
+    std::unique_ptr<tcp_server> _server;
     std::vector<remote_node *> _remotes;
   };
 }
