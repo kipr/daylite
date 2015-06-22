@@ -23,7 +23,6 @@ target_link_libraries(daylite ${LIBRARIES})
 
 # for the dllimport/dllexport switch
 set_target_properties(daylite PROPERTIES COMPILE_FLAGS -DBUILD_DAYLITE_DLL)
-
 ################################################################################
 #   Tests                                                                      #
 ################################################################################

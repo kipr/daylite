@@ -10,25 +10,30 @@ namespace daylite
   public:
     topic(const std::string &name) : _name(name) {}
     ~topic() {}
-    
+
     inline const std::string &name() const { return _name; }
-    
+
+    static const topic any;
+
   private:
     std::string _name;
   };
-  
-  
-  
+
   inline static bool operator ==(const topic &lhs, const topic &rhs)
   {
     return lhs.name() == rhs.name();
+  }
+
+  inline static bool operator !=(const topic &lhs, const topic &rhs)
+  {
+    return !(lhs == rhs);
   }
 }
 
 namespace std
 {
   template<>
-  struct hash<daylite::topic>
+  struct hash < daylite::topic >
   {
     inline size_t operator()(const daylite::topic &rhs) const { return hash<string>()(rhs.name()); }
   };

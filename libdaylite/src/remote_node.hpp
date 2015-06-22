@@ -7,31 +7,26 @@
 
 #include "packet.hpp"
 #include "result.hpp"
-#include "spinner.hpp"
+#include "spinner_impl.hpp"
+#include "mailbox.hpp"
 
 namespace daylite
 {
   class transport;
 
-  class remote_node : private spinett
+  class remote_node : private spinett, public mailbox
   {
-    typedef std::function<void(const packet&)> recv_callback_t;
-
   public:
     remote_node(std::unique_ptr<transport> link);
-
-    void_result send(const packet &p);
-
-    void_result register_recv(uint32_t id, recv_callback_t recv);
-    void_result unregister_recv(uint32_t id);
 
     inline transport *link() const { return _link.get(); }
 
   private:
     virtual void_result spin_update();
 
+    void_result send(const packet& packet);
+
     std::unique_ptr<transport> _link;
-    std::unordered_map<uint32_t, recv_callback_t> _recv_callbacks;
   };
 }
 

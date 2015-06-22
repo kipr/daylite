@@ -1,5 +1,5 @@
 #include "tcp_input_channel.hpp"
-#include "daylite/tcp_socket.hpp"
+#include "tcp_socket.hpp"
 
 #include <cstring>
 #include <cassert>
@@ -43,6 +43,8 @@ result<packet> tcp_input_channel::read()
     if(!ret) return failure<packet>(ret.message());
     _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
+
+  if(elapsed(start) >= _timeout) return failure<packet>("Ran out of time");
   
   // Keep reading until time is up or we reach the requisite length
   uint32_t target_size = *reinterpret_cast<uint32_t *>(_buffer.data());
@@ -57,7 +59,7 @@ result<packet> tcp_input_channel::read()
   if(elapsed(start) >= _timeout) return failure<packet>("Ran out of time");
   
   // Got all of the packet. Chop it off of the buffer and return it.
-  packet p(_buffer.data() + sizeof(uint32_t), target_size);
+  packet p(topic::any, _buffer.data() + sizeof(uint32_t), target_size);
   _buffer.erase(_buffer.begin(), _buffer.begin() + target_size + sizeof(uint32_t));
   return success(p);
 }

@@ -1,18 +1,16 @@
 #ifndef _DAYLIGHT_SUBSCRIBER_HPP_
 #define _DAYLIGHT_SUBSCRIBER_HPP_
 
+#include <cstdint>
+
+#include "daylite/compat.hpp"
+
 namespace daylite
 {
-  class subscriber
+  class DLL_EXPORT subscriber
   {
   public:
-    subscriber(const topic &path);
-    ~subscriber();
-    
-    
-    
-  private:
-    topic _path;
+    typedef void (*subscriber_callback_t)(const uint8_t *data, size_t size);
   };
 }
 

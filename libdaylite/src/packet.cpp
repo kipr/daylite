@@ -1,10 +1,11 @@
-#include "daylite/packet.hpp"
+#include "packet.hpp"
 #include <cstring>
 
 using namespace daylite;
 
-packet::packet(const char *const str)
-  : _data(0)
+packet::packet(topic t, const char *const str)
+  : _topic(std::move(t))
+  , _data(0)
   , _size(strlen(str) + 1)
 {
   if(!_size) return;
@@ -13,8 +14,9 @@ packet::packet(const char *const str)
   memcpy(_data, str, _size);
 }
 
-packet::packet(const uint8_t *const data, const uint32_t size)
-  : _data(0)
+packet::packet(topic t, const uint8_t *const data, const uint32_t size)
+  : _topic(std::move(t))
+  , _data(0)
   , _size(size)
 {
   if(!_size) return;
@@ -24,7 +26,8 @@ packet::packet(const uint8_t *const data, const uint32_t size)
 }
 
 packet::packet(const packet &rhs)
-  : _data(0)
+  : _topic(rhs._topic)
+  , _data(0)
   , _size(rhs._size)
 {
   if(!_size) return;
@@ -34,7 +37,8 @@ packet::packet(const packet &rhs)
 }
 
 packet::packet(packet &&rhs)
-  : _data(rhs._data)
+  : _topic(std::move(rhs._topic))
+  , _data(rhs._data)
   , _size(rhs._size)
 {
   rhs._data = 0;
@@ -50,6 +54,7 @@ packet &packet::operator =(packet &&rhs)
 {
   delete[] _data;
   
+  _topic = std::move(rhs._topic);
   _data = rhs._data;
   _size = rhs._size;
   
@@ -61,6 +66,7 @@ packet &packet::operator =(packet &&rhs)
 packet &packet::operator =(const packet &rhs)
 {
   delete[] _data;
+  _topic = rhs._topic;
   _data = 0;
   _size = rhs._size;
   if(!_size) return *this;

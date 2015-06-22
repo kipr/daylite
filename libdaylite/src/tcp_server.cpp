@@ -1,5 +1,5 @@
-#include "daylite/console.hpp"
-#include "daylite/tcp_server.hpp"
+#include "console.hpp"
+#include "tcp_server.hpp"
 
 #define LISTEN_QUEUE_SIZE (10U)
 

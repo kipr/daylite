@@ -1,5 +1,5 @@
 #include "tcp_output_channel.hpp"
-#include "daylite/tcp_socket.hpp"
+#include "tcp_socket.hpp"
 
 #include <cstring>
 #include <errno.h>

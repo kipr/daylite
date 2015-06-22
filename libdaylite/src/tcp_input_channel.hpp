@@ -1,7 +1,7 @@
 #ifndef _DAYLITE_TCP_INPUT_CHANNEL_HPP_
 #define _DAYLITE_TCP_INPUT_CHANNEL_HPP_
 
-#include "daylite/input_channel.hpp"
+#include "input_channel.hpp"
 
 #include <chrono>
 #include <vector>

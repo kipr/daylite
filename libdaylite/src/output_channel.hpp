@@ -1,6 +1,8 @@
 #ifndef _DAYLITE_OUTPUT_CHANNEL_HPP_
 #define _DAYLITE_OUTPUT_CHANNEL_HPP_
 
+#include <memory>
+
 #include "packet.hpp"
 #include "result.hpp"
 
@@ -11,7 +13,7 @@ namespace daylite
   public:
     virtual ~output_channel() {}
     
-    virtual void_result write(const packet &p) = 0;
+    virtual void_result write(const packet &package) = 0;
   };
 }
 

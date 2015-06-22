@@ -4,7 +4,7 @@
 #include "transport.hpp"
 #include "tcp_socket.hpp"
 #include "tcp_server_listener.hpp"
-#include "spinner.hpp"
+#include "spinner_impl.hpp"
 #include <vector>
 
 namespace daylite

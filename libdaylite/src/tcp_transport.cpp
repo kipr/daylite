@@ -1,4 +1,4 @@
-#include "daylite/tcp_transport.hpp"
+#include "tcp_transport.hpp"
 
 #include "tcp_input_channel.hpp"
 #include "tcp_output_channel.hpp"
@@ -33,12 +33,12 @@ void_result tcp_transport::open()
   {  
     void_result ret;
     if(!(ret = _socket->open())) return ret;
-    if(!(ret = _socket->set_blocking(false)))
+    if(!(ret = _socket->connect(_address)))
     {
       _socket->close();
       return ret;
     }
-    if(!(ret = _socket->connect(_address)))
+    if(!(ret = _socket->set_blocking(false)))
     {
       _socket->close();
       return ret;

@@ -3,21 +3,22 @@
 
 #include <cstdint>
 
-#include "compat.hpp"
+#include "topic.hpp"
 
 namespace daylite
 {
-  class DLL_EXPORT packet
+  class packet
   {
   public:
-    packet(const char *const str);
-    packet(const uint8_t *const data, const uint32_t size);
+    packet(topic t, const char *const str = "");
+    packet(topic t, const uint8_t *const data, const uint32_t size);
     packet(const packet &rhs);
     packet(packet &&rhs);
     ~packet();
     
     inline const uint8_t *data() const { return _data; }
     inline const uint32_t size() const { return _size; }
+    inline topic get_topic() const { return _topic; }
     
     packet &operator =(packet &&rhs);
     packet &operator =(const packet &rhs);
@@ -25,6 +26,7 @@ namespace daylite
   private:
     uint8_t *_data;
     uint32_t _size;
+    topic _topic;
   };
 }
 
