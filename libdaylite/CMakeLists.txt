@@ -12,8 +12,8 @@ file(GLOB LIBDAYLITE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 ################################################################################
 
 if(WIN32)
-  find_file (LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/bin" NO_DEFAULT_PATH)
-  find_path (LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/include/libbson-1.0" NO_DEFAULT_PATH)
+  find_file(LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/bin" NO_DEFAULT_PATH)
+  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/include/libbson-1.0" NO_DEFAULT_PATH)
   find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/lib" NO_DEFAULT_PATH)
 endif()
 
@@ -48,4 +48,17 @@ endif()
 option(examples "Build examples" ON)
 if(examples)
   add_subdirectory(examples)
+endif()
+
+################################################################################
+#   Install                                                                    #
+################################################################################
+install(FILES ${LIBDAYLITE_INCLUDES} DESTINATION include/daylite)
+
+if(WIN32)
+  install(TARGETS daylite
+          ARCHIVE DESTINATION lib
+          RUNTIME DESTINATION bin)
+else()
+  install(TARGETS daylite LIBRARY DESTINATION lib)
 endif()
