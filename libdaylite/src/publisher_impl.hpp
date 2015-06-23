@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include <bson.h>
+
 #include "daylite/publisher.hpp"
 
 #include "topic.hpp"
@@ -17,7 +19,7 @@ namespace daylite
   public:
     publisher_impl(std::shared_ptr<mailbox> mailbox);
 
-    bool publish(const uint8_t *data, uint32_t size);
+    bool publish(const bson_t *msg);
     void_result publish(std::unique_ptr<packet> packet);
 
   private:

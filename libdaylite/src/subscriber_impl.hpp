@@ -4,6 +4,8 @@
 #include <functional>
 #include <memory>
 
+#include <bson.h>
+
 #include "daylite/subscriber.hpp"
 
 #include "topic.hpp"

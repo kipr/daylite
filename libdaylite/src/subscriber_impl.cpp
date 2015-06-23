@@ -7,7 +7,7 @@ subscriber_impl::subscriber_impl(std::shared_ptr<mailbox> mailbox, subscriber::s
 {
   _mailbox->set_incoming_mail_callback([callback](std::shared_ptr<packet> packet)
   {
-    if(callback) callback(packet->data(), packet->size());
+    if(callback) callback(packet->get_msg());
     return success();
   });
 }

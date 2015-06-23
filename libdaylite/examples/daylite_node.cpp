@@ -3,6 +3,8 @@
 #include <memory>
 #include <thread>
 
+#include <bson.h>
+
 #include "daylite/node.hpp"
 #include "daylite/spinner.hpp"
 
@@ -36,7 +38,12 @@ int main(int argc, char *argv[])
 
   for(;;)
   {
-    pub->publish((const uint8_t*) "Hello World", strlen("Hello World") + 1);
+    pub->publish(BCON_NEW
+      ( "Hello", BCON_UTF8("World")
+      , "x", BCON_INT32(123)
+      , "obj", "{"
+        , "a", BCON_UTF8("a_val")
+        , "b", BCON_BOOL(true), "}"));
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
     std::cout << "Tick..." << std::endl;

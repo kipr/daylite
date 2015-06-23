@@ -5,12 +5,11 @@ using namespace daylite;
 publisher_impl::publisher_impl(std::shared_ptr<mailbox> mailbox)
   : _mailbox(mailbox)
 {
-
 }
 
-bool publisher_impl::publish(const uint8_t *data, uint32_t size)
+bool publisher_impl::publish(const bson_t *msg)
 {
-  return publish(std::make_unique<packet>(_mailbox->get_topic(), data, size));
+  return publish(std::make_unique<packet>(_mailbox->get_topic(), msg));
 }
 
 void_result publisher_impl::publish(std::unique_ptr<packet> packet)

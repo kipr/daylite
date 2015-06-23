@@ -6,7 +6,7 @@ using namespace daylite;
 
 void_result mailman::register_mailbox(std::shared_ptr<mailbox> mailbox)
 {
-  mailbox->set_outgoing_mail_callback([this](std::unique_ptr<packet> p) { return send(std::move(p)); });
+  mailbox->set_outgoing_mail_callback([this,mailbox](std::unique_ptr<packet> p) { return send(mailbox->get_id(), std::move(p)); });
   _mailboxes[mailbox->get_topic()][mailbox->get_id()] = mailbox;
   return success();
 }
@@ -25,39 +25,32 @@ void_result mailman::unregister_mailbox(std::shared_ptr<mailbox> mailbox)
   return success();
 }
 
-void_result mailman::send(std::unique_ptr<packet> p)
+void_result mailman::send(uint32_t sender_id, std::unique_ptr<packet> p)
 {
-  if(p->size() < 1) return failure("invalid packet");
- // if(p->data()[0] != 0) return failure("invalid packet");
-
   std::shared_ptr<packet> pack = std::make_shared<packet>(*p.release());
 
-  // check if mailboxes are registered for this topic
-  // workaround: topic '*' are from the network, deliver it just to named topics
-  if(pack->get_topic() == topic::any)
+  // send packet to all registered mailboxes for this topic besides the sender one
+  auto it = _mailboxes.find(pack->get_topic());
+  if(it != _mailboxes.end())
   {
-    for(auto mb : _mailboxes)
+    for(auto mailbox : it->second)
     {
-      if(mb.first != topic::any)
+      if(mailbox.first != sender_id)
       {
-        for(auto mailbox : mb.second)
-        {
-          mailbox.second->place_incoming_mail(pack);
-        }
+        mailbox.second->place_incoming_mail(pack);
       }
     }
   }
-  // workaround: topic '/xxx' are from local, deliver it just to network topics
-  else
+
+  // send packet to all registered mailboxes for the '*' topic besides the sender one
+  it = _mailboxes.find(topic::any);
+  if(it != _mailboxes.end())
   {
-    for(auto mb : _mailboxes)
+    for(auto mailbox : it->second)
     {
-      if(mb.first == topic::any)
+      if(mailbox.first != sender_id)
       {
-        for(auto mailbox : mb.second)
-        {
-          mailbox.second->place_incoming_mail(pack);
-        }
+        mailbox.second->place_incoming_mail(pack);
       }
     }
   }

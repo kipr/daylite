@@ -11,6 +11,12 @@ foreach(EXAMPLE ${EXAMPLES})
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
           $<TARGET_FILE_DIR:${NAME_}>/../../$<CONFIG>/daylite.dll
           $<TARGET_FILE_DIR:${NAME_}>)
+          
+    # copy libbson-1.0.dll into build folder
+    add_custom_command(TARGET ${NAME_} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          ${LIBBSON_DLL}
+          $<TARGET_FILE_DIR:${NAME_}>)
   endif()
   
 endforeach()

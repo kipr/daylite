@@ -1,6 +1,8 @@
 #include "tcp_output_channel.hpp"
 #include "tcp_socket.hpp"
 
+#include <bson.h>
+
 #include <cstring>
 #include <errno.h>
 
@@ -17,18 +19,13 @@ tcp_output_channel::~tcp_output_channel()
 
 void_result tcp_output_channel::write(const packet &p)
 {
-  size_t written = 0;
+  uint32_t written = 0;
+  const uint32_t size = p.get_msg()->len;
+  const uint8_t* data = bson_get_data(p.get_msg());
   
-  const uint32_t size = p.size();
-  result<size_t> ret = _socket->send(reinterpret_cast<const uint8_t *>(&size), sizeof(uint32_t));
-  if(!ret || ret.unwrap() != sizeof(uint32_t))
+  while(written < size)
   {
-    return !ret ? ret.to_void_result() : failure("Failed to write all bytes of size");
-  }
-  
-  while(written < p.size())
-  {
-    result<size_t> ret = _socket->send(p.data() + written, p.size() - written);
+    result<size_t> ret = _socket->send(data + written, size - written);
     if(ret.code() == EAGAIN) continue;
     if(!ret) return ret.to_void_result();
     written += ret.unwrap();

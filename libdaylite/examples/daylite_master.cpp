@@ -3,6 +3,8 @@
 #include <memory>
 #include <thread>
 
+#include <bson.h>
+
 #include "daylite/node.hpp"
 #include "daylite/spinner.hpp"
 
@@ -24,7 +26,23 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  auto sub = me->subscribe("/test", [](const uint8_t *data, uint32_t size) { std::cout << "Got packet " << data << std::endl; });
+  auto sub = me->subscribe("/test", [](const bson_t *msg)
+    {
+      std::cout << "Got packet" << std::endl;
+
+      bson_iter_t it;
+      if(bson_iter_init(&it, msg))
+      {
+        while(bson_iter_next(&it))
+        {
+          std::cout << "Key: " << bson_iter_key(&it);
+          if(BSON_ITER_HOLDS_BOOL(&it)) std::cout << " Value (bool): " << bson_iter_bool(&it);
+          else if(BSON_ITER_HOLDS_INT32(&it)) std::cout << " Value (int32): " << bson_iter_int32(&it);
+          else if(BSON_ITER_HOLDS_UTF8(&it)) std::cout << " Value (utf8): " << bson_iter_utf8(&it, nullptr);
+          std::cout << std::endl;
+        }
+      }
+    });
   if(!sub)
   {
     std::cerr << "Could not subscribe to topic /test" << std::endl;

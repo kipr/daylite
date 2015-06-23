@@ -3,13 +3,15 @@
 
 #include <cstdint>
 
+#include <bson.h>
+
 #include "daylite/compat.hpp"
 
 namespace daylite
 {
   struct DLL_EXPORT publisher
   {
-    virtual bool publish(const uint8_t *data, size_t size) = 0;
+    virtual bool publish(const bson_t *msg) = 0;
   };
 }
 

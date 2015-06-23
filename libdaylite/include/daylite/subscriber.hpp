@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <bson.h>
+
 #include "daylite/compat.hpp"
 
 namespace daylite
@@ -10,7 +12,7 @@ namespace daylite
   class DLL_EXPORT subscriber
   {
   public:
-    typedef void (*subscriber_callback_t)(const uint8_t *data, size_t size);
+    typedef void (*subscriber_callback_t)(const bson_t *msg);
   };
 }
 
