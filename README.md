@@ -34,6 +34,23 @@ It does not take advantage of any un-portable libraries or language features.
 In the future, Daylite will support automatically extending its node graph through network meshing.
 This will allow robot controllers to seamlessly communicate.
 
+
+Requirements
+============
+
+* CMake 2.8.0 or higher
+* libbson
+
+Building (OS X and Linux)
+=========================
+
+    cd daylite
+    mkdir build
+    cd build
+    cmake ..
+    make
+    make install
+
 ## License
 
 Daylite is released under the terms of the GNU General Public License Version 3 (GPLv3). For more details, see the
