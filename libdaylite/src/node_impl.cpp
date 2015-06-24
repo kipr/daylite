@@ -100,10 +100,10 @@ void node_impl::destroy_publisher(publisher *pub)
   delete pub;
 }
 
-subscriber *node_impl::subscribe(const char *t, subscriber::subscriber_callback_t callback)
+subscriber *node_impl::subscribe(const char *t, subscriber::subscriber_callback_t callback, void* usr_arg)
 {
   auto mb = std::make_shared<mailbox>(topic(t));
-  auto sub = new subscriber_impl(mb, callback);
+  auto sub = new subscriber_impl(mb, callback, usr_arg);
   auto ret = _dave->register_mailbox(mb);
   return ret ? sub : nullptr;
 }

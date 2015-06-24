@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  auto sub = me->subscribe("/test", [](const bson_t *msg)
+  auto sub = me->subscribe("/test", [](const bson_t *msg, void*)
     {
       std::cout << "Got packet" << std::endl;
 

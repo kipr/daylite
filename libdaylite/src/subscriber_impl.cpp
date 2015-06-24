@@ -2,12 +2,12 @@
 
 using namespace daylite;
 
-subscriber_impl::subscriber_impl(std::shared_ptr<mailbox> mailbox, subscriber::subscriber_callback_t callback)
+subscriber_impl::subscriber_impl(std::shared_ptr<mailbox> mailbox, subscriber::subscriber_callback_t callback, void* usr_arg)
   : _mailbox(mailbox)
 {
-  _mailbox->set_incoming_mail_callback([callback](std::shared_ptr<packet> packet)
+  _mailbox->set_incoming_mail_callback([callback,usr_arg](std::shared_ptr<packet> packet)
   {
-    if(callback) callback(packet->get_msg());
+    if(callback) callback(packet->get_msg(), usr_arg);
     return success();
   });
 }

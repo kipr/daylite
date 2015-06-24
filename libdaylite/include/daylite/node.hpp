@@ -23,7 +23,7 @@ namespace daylite
     virtual publisher *advertise(const char *topic) = 0;
     virtual void destroy_publisher(publisher *pub) = 0;
 
-    virtual subscriber *subscribe(const char *topic, subscriber::subscriber_callback_t callback) = 0;
+    virtual subscriber *subscribe(const char *topic, subscriber::subscriber_callback_t callback, void* usr_arg=nullptr) = 0;
     virtual void destroy_subscriber(subscriber *sub) = 0;
   };
 }

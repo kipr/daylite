@@ -44,7 +44,7 @@ namespace daylite
     publisher *advertise(const char *topic);
     void destroy_publisher(publisher *pub);
 
-    subscriber *subscribe(const char *topic, subscriber::subscriber_callback_t callback);
+    subscriber *subscribe(const char *topic, subscriber::subscriber_callback_t callback, void* usr_arg);
     void destroy_subscriber(subscriber *sub);
 
     result<std::shared_ptr<publisher>> advertise(const topic &topic);

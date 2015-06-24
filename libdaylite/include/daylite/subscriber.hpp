@@ -12,7 +12,7 @@ namespace daylite
   class DLL_EXPORT subscriber
   {
   public:
-    typedef void (*subscriber_callback_t)(const bson_t *msg);
+    typedef void(*subscriber_callback_t)(const bson_t *msg, void* usr_arg);
   };
 }
 
