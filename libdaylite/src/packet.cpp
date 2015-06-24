@@ -1,72 +1,109 @@
-#include "daylite/packet.hpp"
 #include <cstring>
+
+#include "console.hpp"
+#include "packet.hpp"
 
 using namespace daylite;
 
-packet::packet(const char *const str)
-  : _data(0)
-  , _size(strlen(str) + 1)
+packet::packet(const bson_t *packed_msg)
+  : _topic("--")
+  , _msg(nullptr)
 {
-  if(!_size) return;
-  
-  _data = new uint8_t[_size];
-  memcpy(_data, str, _size);
+  bson_iter_t it;
+  if(bson_iter_init(&it, packed_msg))
+  {
+    // get the topic from the bson message
+    if(bson_iter_find(&it, "topic"))
+    {
+      const bson_value_t *val = bson_iter_value(&it);
+      if(val->value_type == BSON_TYPE_UTF8)
+      {
+        _topic = topic(val->value.v_utf8.str);
+      }
+      else
+      {
+        DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_UTF8 << " expected");
+      }
+    }
+    else
+    {
+      DAYLITE_ERROR_STREAM("Couldn't find key 'topic' in BSON message");
+    }
+
+    // get the msg from the bson message
+    if(bson_iter_find(&it, "msg"))
+    {
+      const bson_value_t *val = bson_iter_value(&it);
+      if(val->value_type == BSON_TYPE_DOCUMENT)
+      {
+        _msg = bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len);
+      }
+      else
+      {
+        DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
+      }
+    }
+    else
+    {
+      DAYLITE_ERROR_STREAM("Couldn't find key 'msg' in BSON message");
+    }
+  }
+  else
+  {
+    DAYLITE_ERROR_STREAM("Couldn't create the BSON iterator");
+  }
 }
 
-packet::packet(const uint8_t *const data, const uint32_t size)
-  : _data(0)
-  , _size(size)
+packet::packet(topic t, const bson_t *raw_msg)
+  : _topic(std::move(t))
+  , _msg(bson_new())
 {
-  if(!_size) return;
-  
-  _data = new uint8_t[_size];
-  memcpy(_data, data, _size);
+  BSON_APPEND_UTF8(_msg, "topic", _topic.name().c_str());
+  if(raw_msg)
+  {
+    BSON_APPEND_DOCUMENT(_msg, "msg", raw_msg);
+  }
+  else
+  {
+    BSON_APPEND_UNDEFINED(_msg, "msg");
+  }
 }
 
 packet::packet(const packet &rhs)
-  : _data(0)
-  , _size(rhs._size)
+  : _topic(rhs._topic)
+  , _msg(rhs._msg ? bson_copy(rhs._msg) : nullptr)
 {
-  if(!_size) return;
-  
-  _data = new uint8_t[_size];
-  memcpy(_data, rhs._data, _size);
 }
 
 packet::packet(packet &&rhs)
-  : _data(rhs._data)
-  , _size(rhs._size)
+  : _topic(std::move(rhs._topic))
+  , _msg(rhs._msg)
 {
-  rhs._data = 0;
-  rhs._size = 0;
+  rhs._msg = nullptr;
 }
 
 packet::~packet()
 {
-  delete[] _data;
+  if(_msg) bson_destroy(_msg);
 }
 
 packet &packet::operator =(packet &&rhs)
 {
-  delete[] _data;
-  
-  _data = rhs._data;
-  _size = rhs._size;
-  
-  rhs._data = 0;
-  rhs._size = 0;
+  if(_msg) bson_destroy(_msg);
+
+  _topic = std::move(rhs._topic);
+  _msg = rhs._msg;
+
+  rhs._msg = nullptr;
+
   return *this;
 }
 
 packet &packet::operator =(const packet &rhs)
 {
-  delete[] _data;
-  _data = 0;
-  _size = rhs._size;
-  if(!_size) return *this;
-  
-  _data = new uint8_t[_size];
-  memcpy(_data, rhs._data, _size);
-  
+  if(_msg) bson_destroy(_msg);
+  _topic = rhs._topic;
+  _msg = rhs._msg ? bson_copy(rhs._msg) : nullptr;
+
   return *this;
 }

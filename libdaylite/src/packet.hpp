@@ -3,26 +3,31 @@
 
 #include <cstdint>
 
+#include <bson.h>
+
+#include "topic.hpp"
+
 namespace daylite
 {
   class packet
   {
   public:
-    packet(const char *const str);
-    packet(const uint8_t *const data, const uint32_t size);
+    packet(const bson_t *packed_msg = nullptr);
+    packet(topic t, const bson_t *raw_msg = nullptr);
+
     packet(const packet &rhs);
     packet(packet &&rhs);
     ~packet();
     
-    inline const uint8_t *data() const { return _data; }
-    inline const uint32_t size() const { return _size; }
+    inline const bson_t *get_msg() const { return _msg; }
+    inline topic get_topic() const { return _topic; }
     
     packet &operator =(packet &&rhs);
     packet &operator =(const packet &rhs);
     
   private:
-    uint8_t *_data;
-    uint32_t _size;
+    topic _topic;
+    bson_t *_msg;
   };
 }
 

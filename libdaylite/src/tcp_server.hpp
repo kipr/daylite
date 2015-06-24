@@ -3,18 +3,12 @@
 
 #include "transport.hpp"
 #include "tcp_socket.hpp"
-#include "spinner.hpp"
+#include "tcp_server_listener.hpp"
+#include "spinner_impl.hpp"
 #include <vector>
 
 namespace daylite
 {
-  class tcp_server_listener
-  {
-  public:
-    virtual void server_connection(tcp_socket *client) = 0;
-    virtual void server_disconnection(tcp_socket *client) = 0;
-  };
-  
   class tcp_server : private spinett
   {
   public:
@@ -31,8 +25,6 @@ namespace daylite
     virtual void_result spin_update();
     
     socket_address _address;
-    input_channel *_input_channel;
-    output_channel *_output_channel;
     tcp_socket _socket;
     std::vector<tcp_socket *> _clients;
     

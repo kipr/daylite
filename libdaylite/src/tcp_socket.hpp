@@ -47,6 +47,10 @@ namespace daylite
     tcp_socket(int fd, const option<socket_address> &assoc = none<socket_address>());
     int _fd;
     option<socket_address> _associated_address;
+
+#ifdef WIN32
+    bool _blocking;
+#endif
   };
 }
 

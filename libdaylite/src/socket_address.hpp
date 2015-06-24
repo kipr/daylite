@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-#include "daylite/socket_address.hpp"
+#include "socket_address.hpp"
 
 namespace daylite
 {

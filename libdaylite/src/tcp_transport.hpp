@@ -3,7 +3,7 @@
 
 #include "transport.hpp"
 #include "tcp_socket.hpp"
-#include "spinner.hpp"
+#include "spinner_impl.hpp"
 
 namespace daylite
 {
