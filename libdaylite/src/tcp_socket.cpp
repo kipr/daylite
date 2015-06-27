@@ -107,6 +107,7 @@ namespace
 
 tcp_socket::tcp_socket()
   : _associated_address(none<socket_address>())
+  , _fd(-1)
 #ifdef WIN32
   , _blocking(true)
 #endif

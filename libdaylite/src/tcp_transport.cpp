@@ -12,7 +12,6 @@ tcp_transport::tcp_transport(const socket_address &address)
   , _input_channel(0)
   , _output_channel(0)
 {
-  _socket->set_blocking(false);
 }
 
 tcp_transport::tcp_transport(tcp_socket *const socket)
@@ -34,11 +33,13 @@ void_result tcp_transport::open()
   {  
     void_result ret;
     if(!(ret = _socket->open())) return ret;
+    
     if(!(ret = _socket->connect(_address)))
     {
       _socket->close();
       return ret;
     }
+    
     if(!(ret = _socket->set_blocking(false)))
     {
       _socket->close();
