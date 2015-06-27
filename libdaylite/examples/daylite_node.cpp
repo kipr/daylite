@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
   bool ret = me->join_daylite("127.0.0.1", 8374);
   if(!ret)
   {
-    std::cerr << "Could not connect to the daylite gaitway" << std::endl;
+    std::cerr << "Could not connect to the daylite gateway" << std::endl;
     node::destroy_node(me);
     return 1;
   }
