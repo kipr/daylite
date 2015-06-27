@@ -29,7 +29,7 @@ node_impl::~node_impl()
   stop_gateway_service();
 }
 
-bool node_impl::start_gateway_service(const char *local_host, uint16_t local_port)
+void_result node_impl::start_gateway_service(const char *local_host, uint16_t local_port)
 {
   void_result ret;
 
@@ -47,10 +47,10 @@ bool node_impl::start_gateway_service(const char *local_host, uint16_t local_por
     return ret;
   }
 
-  return true;
+  return success();
 }
 
-bool node_impl::stop_gateway_service()
+void_result node_impl::stop_gateway_service()
 {
   if(!_server) return failure("Node not started");
 
@@ -62,7 +62,7 @@ bool node_impl::stop_gateway_service()
   return success();
 }
 
-bool node_impl::join_daylite(const char *gateway_host, uint16_t gateway_port)
+void_result node_impl::join_daylite(const char *gateway_host, uint16_t gateway_port)
 {
   socket_address gateway(gateway_host, gateway_port);
   void_result ret;
@@ -80,7 +80,7 @@ bool node_impl::join_daylite(const char *gateway_host, uint16_t gateway_port)
   return success();
 }
 
-bool node_impl::leave_daylite()
+void_result node_impl::leave_daylite()
 {
   _remotes.clear();
 

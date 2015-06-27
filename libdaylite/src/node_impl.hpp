@@ -15,8 +15,8 @@
 #include "spinner_impl.hpp"
 #include "subscriber_impl.hpp"
 #include "tcp_server_listener.hpp"
-#include "result.hpp"
-#include "option.hpp"
+#include "daylite/result.hpp"
+#include "daylite/option.hpp"
 #include "socket_address.hpp"
 
 namespace daylite
@@ -33,11 +33,11 @@ namespace daylite
     node_impl(const std::string &name, const option<socket_address> &us);
     ~node_impl();
 
-    bool start_gateway_service(const char *local_host, uint16_t local_port);
-    bool stop_gateway_service();
+    void_result start_gateway_service(const char *local_host, uint16_t local_port);
+    void_result stop_gateway_service();
 
-    bool join_daylite(const char *gateway_host, uint16_t gateway_port);
-    bool leave_daylite();
+    void_result join_daylite(const char *gateway_host, uint16_t gateway_port);
+    void_result leave_daylite();
 
     const char *get_name() const { return _name.c_str(); }
 

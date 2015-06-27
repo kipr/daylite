@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <sstream>
 
 #include "socket_address.hpp"
 
@@ -17,6 +18,13 @@ namespace daylite
     
     inline const std::string &host() const { return _host; }
     inline uint16_t port() const { return _port; }
+    
+    inline std::string to_string()
+    {
+      std::stringstream s;
+      s << _host << ":" << _port;
+      return s.str();
+    }
     
   private:
     std::string _host;

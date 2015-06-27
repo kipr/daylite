@@ -1,7 +1,7 @@
 #ifndef _DAYLITE_INPUT_CHANNEL_HPP_
 #define _DAYLITE_INPUT_CHANNEL_HPP_
 
-#include "result.hpp"
+#include "daylite/result.hpp"
 #include "packet.hpp"
 
 namespace daylite

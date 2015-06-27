@@ -4,6 +4,8 @@
 #include "tcp_transport.hpp"
 #include "mailman.hpp"
 
+#include <iostream>
+
 using namespace daylite;
 
 remote_node::remote_node(std::unique_ptr<transport> link)

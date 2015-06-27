@@ -2,8 +2,8 @@
 #define _DAYLIGHT_TCP_SOCKET_HPP_
 
 #include "socket_address.hpp"
-#include "result.hpp"
-#include "option.hpp"
+#include "daylite/result.hpp"
+#include "daylite/option.hpp"
 
 #include <cstdint>
 #include <cstring>

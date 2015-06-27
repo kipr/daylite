@@ -1,7 +1,7 @@
 #ifndef _DAYLITE_MAILBOX_HPP_
 #define _DAYLITE_MAILBOX_HPP_
 
-#include "result.hpp"
+#include "daylite/result.hpp"
 #include "packet.hpp"
 #include "topic.hpp"
 

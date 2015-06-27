@@ -3,8 +3,8 @@
 
 #include "input_channel.hpp"
 #include "output_channel.hpp"
-#include "option.hpp"
-#include "result.hpp"
+#include "daylite/option.hpp"
+#include "daylite/result.hpp"
 
 namespace daylite
 {

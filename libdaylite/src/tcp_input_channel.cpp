@@ -60,8 +60,8 @@ result<packet> tcp_input_channel::read()
   if(elapsed(start) >= _timeout) return failure<packet>("Ran out of time");
 
   // Got all of the packet. Chop it off of the buffer and return it.
-  bson_reader_t* reader;
-  const bson_t* doc;
+  bson_reader_t *reader;
+  const bson_t *doc;
 
   reader = bson_reader_new_from_data(_buffer.data(), target_size);
   if(!reader)

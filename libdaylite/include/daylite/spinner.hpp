@@ -2,13 +2,14 @@
 #define _DAYLITE_SPINNER_HPP_
 
 #include "compat.hpp"
+#include "daylite/result.hpp"
 
 namespace daylite
 {
   namespace spinner
   {
-    DLL_EXPORT bool spin();
-    DLL_EXPORT bool spin_once();
+    DLL_EXPORT void_result spin();
+    DLL_EXPORT void_result spin_once();
   }
 }
 

@@ -6,12 +6,13 @@
 #include <bson.h>
 
 #include "daylite/compat.hpp"
+#include "daylite/result.hpp"
 
 namespace daylite
 {
   struct DLL_EXPORT publisher
   {
-    virtual bool publish(const bson_t *msg) = 0;
+    virtual void_result publish(const bson_t *msg) = 0;
   };
 }
 

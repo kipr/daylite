@@ -14,14 +14,14 @@ spinett::~spinett()
   spinner_impl::ref().unregister_spinett(this);
 }
 
-bool spinner::spin()
+void_result spinner::spin()
 {
-  return  spinner_impl::ref().spin();
+  return spinner_impl::ref().spin();
 }
 
-bool spinner::spin_once()
+void_result spinner::spin_once()
 {
-  return  spinner_impl::ref().spin_once();
+  return spinner_impl::ref().spin_once();
 }
 
 spinner_impl daylite::spinner_impl::_singleton = spinner_impl();

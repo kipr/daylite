@@ -10,7 +10,7 @@
 
 #include "topic.hpp"
 #include "packet.hpp"
-#include "result.hpp"
+#include "daylite/result.hpp"
 #include "mailbox.hpp"
 
 namespace daylite

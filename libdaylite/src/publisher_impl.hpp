@@ -9,7 +9,7 @@
 
 #include "topic.hpp"
 #include "packet.hpp"
-#include "result.hpp"
+#include "daylite/result.hpp"
 #include "mailbox.hpp"
 
 namespace daylite
@@ -19,7 +19,7 @@ namespace daylite
   public:
     publisher_impl(std::shared_ptr<mailbox> mailbox);
 
-    bool publish(const bson_t *msg);
+    void_result publish(const bson_t *msg);
     void_result publish(std::unique_ptr<packet> packet);
 
   private:

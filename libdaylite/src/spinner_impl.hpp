@@ -1,7 +1,7 @@
 #ifndef _DAYLITE_SPINNER_IMPL_HPP_
 #define _DAYLITE_SPINNER_IMPL_HPP_
 
-#include "result.hpp"
+#include "daylite/result.hpp"
 
 #include <vector>
 

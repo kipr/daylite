@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #include "packet.hpp"
-#include "result.hpp"
+#include "daylite/result.hpp"
 #include "spinner_impl.hpp"
 #include "mailbox.hpp"
 
