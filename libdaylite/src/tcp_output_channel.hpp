@@ -16,6 +16,7 @@ namespace daylite
     ~tcp_output_channel();
     
     virtual void_result write(const packet &package);
+    virtual bool is_available() const;
     
   private:
     tcp_socket *_socket;

@@ -1,9 +1,9 @@
 #include "console.hpp"
 #include "tcp_input_channel.hpp"
 #include "tcp_socket.hpp"
+#include "assert.hpp"
 
 #include <cstring>
-#include <cassert>
 #include <errno.h>
 
 using namespace daylite;
@@ -30,7 +30,7 @@ tcp_input_channel::~tcp_input_channel()
 result<packet> tcp_input_channel::read()
 {
   // Socket cannot be blocking. Hard fail (programmatic error).
-  assert(!_socket->blocking().or_else(true));
+  assert_result_eq(_socket->blocking(), false);
 
   const auto start = steady_clock::now();
 
@@ -79,4 +79,9 @@ result<packet> tcp_input_channel::read()
   bson_reader_destroy(reader);
 
   return success(p);
+}
+
+bool tcp_input_channel::is_available() const
+{
+  return _socket && _socket->is_open();
 }

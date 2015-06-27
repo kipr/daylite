@@ -33,18 +33,18 @@ namespace daylite
     node_impl(const std::string &name, const option<socket_address> &us);
     ~node_impl();
 
-    void_result start_gateway_service(const char *local_host, uint16_t local_port);
+    void_result start_gateway_service(const std::string &local_host, uint16_t local_port);
     void_result stop_gateway_service();
 
-    void_result join_daylite(const char *gateway_host, uint16_t gateway_port);
+    void_result join_daylite(const std::string &gateway_host, uint16_t gateway_port);
     void_result leave_daylite();
 
-    const char *get_name() const { return _name.c_str(); }
+    const std::string &get_name() const { return _name; }
 
-    publisher *advertise(const char *topic);
+    publisher *advertise(const std::string &topic);
     void destroy_publisher(publisher *pub);
 
-    subscriber *subscribe(const char *topic, subscriber::subscriber_callback_t callback, void* usr_arg);
+    subscriber *subscribe(const std::string &topic, subscriber::subscriber_callback_t callback, void *usr_arg);
     void destroy_subscriber(subscriber *sub);
 
     result<std::shared_ptr<publisher>> advertise(const topic &topic);

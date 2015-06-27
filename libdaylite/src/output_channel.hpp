@@ -14,6 +14,7 @@ namespace daylite
     virtual ~output_channel() {}
     
     virtual void_result write(const packet &package) = 0;
+    virtual bool is_available() const = 0;
   };
 }
 

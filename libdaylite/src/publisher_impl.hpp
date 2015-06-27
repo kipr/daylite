@@ -17,7 +17,7 @@ namespace daylite
   class publisher_impl : public publisher
   {
   public:
-    publisher_impl(std::shared_ptr<mailbox> mailbox);
+    publisher_impl(const std::shared_ptr<mailbox> &mailbox);
 
     void_result publish(const bson_t *msg);
     void_result publish(std::unique_ptr<packet> packet);

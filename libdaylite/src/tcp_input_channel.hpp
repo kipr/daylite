@@ -27,6 +27,7 @@ namespace daylite
     }
     
     virtual result<packet> read();
+    virtual bool is_available() const;
     
   private:
     tcp_socket *_socket;

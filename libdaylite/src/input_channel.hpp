@@ -12,6 +12,7 @@ namespace daylite
     virtual ~input_channel() {}
     
     virtual result<packet> read() = 0;
+    virtual bool is_available() const = 0;
   };
 }
 

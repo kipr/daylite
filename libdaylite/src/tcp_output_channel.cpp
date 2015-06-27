@@ -33,3 +33,8 @@ void_result tcp_output_channel::write(const packet &p)
   
   return success();
 }
+
+bool tcp_output_channel::is_available() const
+{
+  return _socket && _socket->is_open();
+}

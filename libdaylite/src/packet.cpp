@@ -4,6 +4,7 @@
 #include "packet.hpp"
 
 using namespace daylite;
+using namespace std;
 
 packet::packet(const bson_t *packed_msg)
   : _topic("--")
@@ -16,14 +17,8 @@ packet::packet(const bson_t *packed_msg)
     if(bson_iter_find(&it, "topic"))
     {
       const bson_value_t *val = bson_iter_value(&it);
-      if(val->value_type == BSON_TYPE_UTF8)
-      {
-        _topic = topic(val->value.v_utf8.str);
-      }
-      else
-      {
-        DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_UTF8 << " expected");
-      }
+      if(val->value_type == BSON_TYPE_UTF8) _topic = topic(val->value.v_utf8.str);
+      else DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_UTF8 << " expected");
     }
     else
     {
@@ -34,14 +29,8 @@ packet::packet(const bson_t *packed_msg)
     if(bson_iter_find(&it, "msg"))
     {
       const bson_value_t *val = bson_iter_value(&it);
-      if(val->value_type == BSON_TYPE_DOCUMENT)
-      {
-        _msg = bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len);
-      }
-      else
-      {
-        DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
-      }
+      if(val->value_type == BSON_TYPE_DOCUMENT) _msg = bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len);
+      else DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
     }
     else
     {
@@ -54,19 +43,13 @@ packet::packet(const bson_t *packed_msg)
   }
 }
 
-packet::packet(topic t, const bson_t *raw_msg)
-  : _topic(std::move(t))
+packet::packet(const topic &t, const bson_t *raw_msg)
+  : _topic(move(t))
   , _msg(bson_new())
 {
   BSON_APPEND_UTF8(_msg, "topic", _topic.name().c_str());
-  if(raw_msg)
-  {
-    BSON_APPEND_DOCUMENT(_msg, "msg", raw_msg);
-  }
-  else
-  {
-    BSON_APPEND_UNDEFINED(_msg, "msg");
-  }
+  if(raw_msg) BSON_APPEND_DOCUMENT(_msg, "msg", raw_msg);
+  else BSON_APPEND_UNDEFINED(_msg, "msg");
 }
 
 packet::packet(const packet &rhs)
@@ -76,7 +59,7 @@ packet::packet(const packet &rhs)
 }
 
 packet::packet(packet &&rhs)
-  : _topic(std::move(rhs._topic))
+  : _topic(move(rhs._topic))
   , _msg(rhs._msg)
 {
   rhs._msg = nullptr;
@@ -91,7 +74,7 @@ packet &packet::operator =(packet &&rhs)
 {
   if(_msg) bson_destroy(_msg);
 
-  _topic = std::move(rhs._topic);
+  _topic = move(rhs._topic);
   _msg = rhs._msg;
 
   rhs._msg = nullptr;

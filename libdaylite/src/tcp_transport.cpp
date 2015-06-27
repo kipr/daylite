@@ -70,23 +70,24 @@ void_result tcp_transport::close()
 
 option<input_channel *>  tcp_transport::input()  const
 {
-  return _input_channel ? some(_input_channel) : none<input_channel *>();
+  return _input_channel && _input_channel->is_available() ? some(_input_channel) : none<input_channel *>();
 }
 
 option<output_channel *> tcp_transport::output() const
 {
-  return _output_channel ? some(_output_channel) : none<output_channel *>();
+  return _output_channel && _output_channel->is_available() ? some(_output_channel) : none<output_channel *>();
 }
 
 void_result tcp_transport::spin_update()
 {
+  if(!_socket) return success();
+  
   uint8_t tmp[1];
   result<size_t> ret = _socket->recv(tmp, sizeof(tmp), tcp_socket::comm_peek);
   
   // Recv will return no error and ret == 0 when a client disconnects
   // if there's still a connection but no data, it will return the EAGAIN error.
   if(!ret || ret.unwrap() > 0) return success();
-  
   close();
   
   return success();

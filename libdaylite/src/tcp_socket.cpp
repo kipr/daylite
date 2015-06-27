@@ -141,6 +141,7 @@ void tcp_socket::close()
   if(_fd < 0) return;
 #ifdef WIN32
   closesocket(_fd);
+  _blocking = true;
 #else
   ::close(_fd);
 #endif
@@ -150,7 +151,7 @@ void tcp_socket::close()
 
 void_result tcp_socket::bind(const socket_address &address)
 {
-  if(_fd < 0) return failure("tcp_socket not open");
+  if(!is_open()) return failure("tcp_socket not open");
   
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
@@ -162,7 +163,7 @@ void_result tcp_socket::bind(const socket_address &address)
 
 void_result tcp_socket::connect(const socket_address &address)
 {
-  if(_fd < 0) return failure("tcp_socket not open");
+  if(!is_open()) return failure("tcp_socket not open");
   
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
@@ -174,7 +175,7 @@ void_result tcp_socket::connect(const socket_address &address)
 
 void_result tcp_socket::listen(const uint32_t queue_size)
 {
-  if(_fd < 0) return failure("tcp_socket not open");
+  if(!is_open()) return failure("tcp_socket not open");
   return get_std_error(::listen(_fd, queue_size));
 }
 
@@ -193,7 +194,7 @@ result<tcp_socket *> tcp_socket::accept()
 
 result<bool> tcp_socket::blocking() const
 {
-  if (_fd < 0) return failure("tcp_socket not open");
+  if (!is_open()) return failure("tcp_socket not open");
 
 #ifdef WIN32
   return success<bool>(_blocking);
@@ -206,7 +207,7 @@ result<bool> tcp_socket::blocking() const
 
 void_result tcp_socket::set_blocking(const bool blocking)
 {
-   if(_fd < 0) return failure("tcp_socket not open");
+   if(!is_open()) return failure("tcp_socket not open");
 
 #ifdef WIN32
    u_long mode = blocking ? 0 : 1;
@@ -229,7 +230,7 @@ result<size_t> tcp_socket::send(const uint8_t *const data, const size_t size, co
 
 result<size_t> tcp_socket::recv(uint8_t *const data, const size_t size, const comm_flags flags)
 {
-  ssize_t ret = ::recv(_fd, (char*)data, size, flags == comm_peek ? MSG_PEEK : 0);
+  ssize_t ret = ::recv(_fd, (char *)data, size, flags == comm_peek ? MSG_PEEK : 0);
   if(ret < 0)
   {
     update_errno();
@@ -240,11 +241,16 @@ result<size_t> tcp_socket::recv(uint8_t *const data, const size_t size, const co
 
 option<uint16_t> tcp_socket::port() const
 {
-  if(_fd < 0) return none<uint16_t>();
+  if(!is_open()) return none<uint16_t>();
   socklen_t len = 0;
   sockaddr_in addr;
   getsockname(_fd, reinterpret_cast<sockaddr *>(&addr), &len);
   return some(addr.sin_port);
+}
+
+bool tcp_socket::is_open() const
+{
+  return _fd >= 0;
 }
 
 tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)

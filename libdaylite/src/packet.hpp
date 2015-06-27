@@ -13,7 +13,7 @@ namespace daylite
   {
   public:
     packet(const bson_t *packed_msg = nullptr);
-    packet(topic t, const bson_t *raw_msg = nullptr);
+    packet(const topic &t, const bson_t *raw_msg = nullptr);
 
     packet(const packet &rhs);
     packet(packet &&rhs);

@@ -126,7 +126,7 @@ namespace daylite
   
   inline static void_result failure(const std::string &message, const uint32_t code = uint32_t())
   {
-    return void_result(message, code);
+    return void_result(false, message, code);
   }
   
   template<typename T>

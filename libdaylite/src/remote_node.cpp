@@ -7,16 +7,19 @@
 #include <iostream>
 
 using namespace daylite;
+using namespace std;
 
-remote_node::remote_node(std::unique_ptr<transport> link)
-  : mailbox(topic::any, [this](std::shared_ptr<packet> p) { return send(*p.get()); })
-  , _link(std::move(link))
+remote_node::remote_node(unique_ptr<transport> link)
+  : mailbox(topic::any, [this](shared_ptr<packet> p) { return send(*p.get()); })
+  , _link(move(link))
 {
 }
 
 void_result remote_node::send(const packet &p)
 {
-  return _link->output().unwrap()->write(p);
+  auto out = _link->output();
+  if(out.none()) return failure("link not open");
+  return out.unwrap()->write(p);
 }
 
 void_result remote_node::spin_update()
@@ -30,7 +33,7 @@ void_result remote_node::spin_update()
     auto p = in.unwrap()->read();
     if(!p) break;
 
-    place_outgoing_mail(std::make_unique<packet>(p.unwrap()));
+    place_outgoing_mail(make_unique<packet>(p.unwrap()));
   }
 
   return success();

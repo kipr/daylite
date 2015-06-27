@@ -43,6 +43,8 @@ namespace daylite
     option<uint16_t> port() const;
     inline option<int> fd() const { return _fd < 0 ? none<int>() : some(_fd); }
     
+    bool is_open() const;
+    
   private:
     tcp_socket(int fd, const option<socket_address> &assoc = none<socket_address>());
     int _fd;
