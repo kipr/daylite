@@ -3,7 +3,7 @@ project(daylite)
 cmake_minimum_required(VERSION 2.8.12)
 
 if(NOT WIN32)
-  add_definitions(-std=c++11)
+  add_definitions(-std=c++1y)
 endif()
 
 if(NOT WIN32)

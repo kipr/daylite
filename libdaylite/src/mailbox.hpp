@@ -25,7 +25,7 @@ namespace daylite
     void_result set_outgoing_mail_callback(outgoing_mail_callback_t outgoing_mail_callback);
 
     topic get_topic() const { return _topic; }
-    uint32_t get_id() const;
+    size_t get_id() const;
 
     void_result place_incoming_mail(std::shared_ptr<packet> packet);
     void_result place_outgoing_mail(std::unique_ptr<packet> packet);

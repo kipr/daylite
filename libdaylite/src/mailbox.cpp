@@ -24,9 +24,9 @@ void_result mailbox::set_outgoing_mail_callback(outgoing_mail_callback_t outgoin
   return success();
 }
 
-uint32_t mailbox::get_id() const
+size_t mailbox::get_id() const
 {
-  return (uint32_t) this;
+  return (size_t) this;
 }
 
 void_result mailbox::place_incoming_mail(std::shared_ptr<packet> packet)

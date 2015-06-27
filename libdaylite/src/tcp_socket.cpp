@@ -15,6 +15,7 @@ typedef LONG_PTR ssize_t;
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -89,6 +90,12 @@ namespace
   {
     return some(socket_address(inet_ntoa(address.sin_addr), address.sin_port));
   }
+
+  void_result get_std_error()
+  {
+    update_errno();
+    return failure(strerror(errno), errno);
+  }
   
   template<typename T>
   void_result get_std_error(const T value)
@@ -96,16 +103,13 @@ namespace
     if(value < 0) return get_std_error();
     return success();
   }
-  
-  void_result get_std_error()
-  {
-    update_errno();
-    return failure(strerror(errno), errno);
-  }
 }
 
 tcp_socket::tcp_socket()
-  : _associated_address(none<socket_address>()), _blocking(true)
+  : _associated_address(none<socket_address>())
+#ifdef WIN32
+  , _blocking(true)
+#endif
 {
 #ifdef WIN32
   WSADATA wsa;

@@ -1,9 +1,9 @@
 #ifndef _DAYLITE_NODE_HPP_
 #define _DAYLITE_NODE_HPP_
 
-#include "daylite\compat.hpp"
-#include "daylite\publisher.hpp"
-#include "daylite\subscriber.hpp"
+#include "daylite/compat.hpp"
+#include "daylite/publisher.hpp"
+#include "daylite/subscriber.hpp"
 
 namespace daylite
 {
