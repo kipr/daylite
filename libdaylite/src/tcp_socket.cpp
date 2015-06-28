@@ -134,13 +134,7 @@ tcp_socket::~tcp_socket()
 void_result tcp_socket::open()
 {
   void_result res = get_std_error(_fd = ::socket(AF_INET, SOCK_STREAM, 0));
-  if(res)
-  {
-#ifndef __linux__
-  int set = 1;
-  setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
-#endif
-  }
+  if(res) setup_socket();
   return res;
 }
 
@@ -273,8 +267,14 @@ tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)
   : _fd(fd)
   , _associated_address(assoc)
 {
+  setup_socket();
+}
+
+void tcp_socket::setup_socket()
+{
 #ifndef __linux__
   int set = 1;
   setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 #endif
+  set_blocking(false);
 }

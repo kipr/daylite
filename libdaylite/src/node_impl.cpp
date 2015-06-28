@@ -5,6 +5,8 @@
 #include "remote_node.hpp"
 #include "mailman.hpp"
 
+#include <iostream>
+
 using namespace daylite;
 using namespace std;
 
@@ -98,7 +100,7 @@ shared_ptr<subscriber> node_impl::subscribe(const std::string &t, subscriber::su
 
 void node_impl::server_connection(tcp_socket *const socket)
 {
-  auto transport = make_unique<tcp_transport>(socket);
+  auto transport = make_unique<tcp_transport>(socket, false);
   auto result = transport->open();
   if(!result)
   {
@@ -116,6 +118,7 @@ void node_impl::server_disconnection(tcp_socket *const socket)
   for(auto it = _remotes.begin(); it != _remotes.end();)
   {
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket) { ++it; continue; }
+    _dave->unregister_mailbox(*it);
     it = _remotes.erase(it);
   }
 }
@@ -125,6 +128,7 @@ void_result node_impl::spin_update()
   for(auto it = _remotes.begin(); it != _remotes.end();)
   {
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket()) { ++it; continue; }
+    _dave->unregister_mailbox(*it);
     it = _remotes.erase(it);
   }
   return success();

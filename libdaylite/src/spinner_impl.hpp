@@ -42,7 +42,6 @@ namespace daylite
     void_result unregister_spinett(spinett *const sp);
 
     std::vector<spinett *> _spinetts_to_add;
-    std::vector<spinett *> _spinetts_to_remove;
     std::vector<spinett *> _spinetts;
     
     static spinner_impl _singleton;

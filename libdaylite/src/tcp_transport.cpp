@@ -11,14 +11,16 @@ tcp_transport::tcp_transport(const socket_address &address)
   , _socket(new tcp_socket())
   , _input_channel(0)
   , _output_channel(0)
+  , _owns(true)
 {
 }
 
-tcp_transport::tcp_transport(tcp_socket *const socket)
+tcp_transport::tcp_transport(tcp_socket *const socket, const bool owns)
   : _address(socket->associated_address().unwrap())
   , _socket(socket)
   , _input_channel(0)
   , _output_channel(0)
+  , _owns(owns)
 {
 }
 
@@ -35,12 +37,6 @@ void_result tcp_transport::open()
     if(!(ret = _socket->open())) return ret;
     
     if(!(ret = _socket->connect(_address)))
-    {
-      _socket->close();
-      return ret;
-    }
-    
-    if(!(ret = _socket->set_blocking(false)))
     {
       _socket->close();
       return ret;
@@ -62,7 +58,7 @@ void_result tcp_transport::close()
   _output_channel = 0;
   
   _socket->close();
-  delete _socket;
+  if(_owns) delete _socket;
   _socket = 0;
   
   return success();

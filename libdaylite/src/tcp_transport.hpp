@@ -11,7 +11,7 @@ namespace daylite
   {
   public:
     tcp_transport(const socket_address &address);
-    tcp_transport(tcp_socket *const socket);
+    tcp_transport(tcp_socket *const socket, const bool owns = true);
     virtual ~tcp_transport();
     
     virtual void_result open();
@@ -30,6 +30,7 @@ namespace daylite
     input_channel *_input_channel;
     output_channel *_output_channel;
     tcp_socket *_socket;
+    bool _owns;
   };
 }
 

@@ -2,7 +2,10 @@
 
 #include "spinner_impl.hpp"
 
+#include <iostream>
+
 using namespace daylite;
+using namespace std;
 
 spinett::spinett()
 {
@@ -35,6 +38,7 @@ void_result spinner_impl::spin_once()
 {
   for(auto sp : _spinetts)
   {
+    if(!sp) continue;
     void_result ret = sp->spin_update();
     if(!ret) return ret;
   }
@@ -47,18 +51,13 @@ void_result spinner_impl::spin_once()
   }
 
   // Remove spinnets (we cannot remove them from _spinnets directly as this might break the previous loop)
-  if(_spinetts_to_remove.size())
+  for(auto it = _spinetts.begin(); it != _spinetts.end(); ++it)
   {
-    for(auto sp : _spinetts_to_remove)
-    {
-      for(auto it = _spinetts.begin(); it != _spinetts.end(); ++it)
-      {
-        if(*it != sp) continue;
-        _spinetts.erase(it);
-        break;
-      }
-    }
+    if(*it) continue;
+    _spinetts.erase(it);
+    break;
   }
+  
   return success();
 }
 
@@ -70,10 +69,13 @@ void_result spinner_impl::register_spinett(spinett *const sp)
 
 void_result spinner_impl::unregister_spinett(spinett *const sp)
 {
-  _spinetts_to_remove.push_back(sp);
-  return success();
+  for(auto &spinett : _spinetts)
+  {
+    if(spinett != sp) continue;
+    spinett = 0;
+  }
   
-  return failure("Spinett not found in spinner");
+  return success();
 }
 
 spinner_impl::spinner_impl()

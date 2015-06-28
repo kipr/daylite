@@ -18,6 +18,7 @@ namespace daylite
   {
   public:
     remote_node(std::unique_ptr<transport> link);
+    virtual ~remote_node();
 
     inline transport *link() const { return _link.get(); }
 

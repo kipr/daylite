@@ -21,11 +21,6 @@ void_result tcp_server::open()
   void_result ret;
 
   if(!(ret = _socket.open())) return ret;
-  if(!(ret = _socket.set_blocking(false)))
-  {
-    _socket.close();
-    return ret;
-  }
   if(!(ret = _socket.bind(_address)))
   {
     _socket.close();
@@ -102,7 +97,6 @@ void_result tcp_server::spin_update()
     DAYLITE_DEBUG_STREAM("Got client");
 
     tcp_socket *client = client_result.unwrap();
-    client->set_blocking(false);
     _clients.push_back(client);
 
     for(auto listener : _listeners) listener->server_connection(client);

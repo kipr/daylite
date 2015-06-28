@@ -15,6 +15,10 @@ remote_node::remote_node(unique_ptr<transport> link)
 {
 }
 
+remote_node::~remote_node()
+{
+}
+
 void_result remote_node::send(const packet &p)
 {
   auto out = _link->output();
