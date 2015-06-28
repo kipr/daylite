@@ -10,7 +10,7 @@ publisher_impl::publisher_impl(const shared_ptr<mailbox> &mailbox)
 
 void_result publisher_impl::publish(const bson_t *msg)
 {
-  return publish(make_unique<packet>(_mailbox->get_topic(), msg));
+  return publish(make_unique<packet>(_mailbox->topic(), msg));
 }
 
 void_result publisher_impl::publish(unique_ptr<packet> packet)

@@ -20,8 +20,8 @@ tcp_output_channel::~tcp_output_channel()
 void_result tcp_output_channel::write(const packet &p)
 {
   uint32_t written = 0;
-  const uint32_t size = p.get_msg()->len;
-  const uint8_t *data = bson_get_data(p.get_msg());
+  const uint32_t size = p.packed()->len;
+  const uint8_t *data = bson_get_data(p.packed());
   
   while(written < size)
   {

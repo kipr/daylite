@@ -3,7 +3,7 @@
 using namespace daylite;
 using namespace std;
 
-mailbox::mailbox(const topic &topic
+mailbox::mailbox(const class topic &topic
   , const incoming_mail_callback_t &incoming_mail_callback
   , const outgoing_mail_callback_t &outgoing_mail_callback)
   : _topic(move(topic))
@@ -25,7 +25,7 @@ void_result mailbox::set_outgoing_mail_callback(const outgoing_mail_callback_t &
   return success();
 }
 
-size_t mailbox::get_id() const
+size_t mailbox::id() const
 {
   return (size_t) this;
 }

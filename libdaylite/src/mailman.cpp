@@ -10,20 +10,20 @@ void_result mailman::register_mailbox(const shared_ptr<mailbox> &mailbox)
 {
   mailbox->set_outgoing_mail_callback([this, mailbox](unique_ptr<packet> p)
   {
-    return send(mailbox->get_id(), move(p));
+    return send(mailbox->id(), move(p));
   });
   
-  _mailboxes[mailbox->get_topic()][mailbox->get_id()] = mailbox;
+  _mailboxes[mailbox->topic()][mailbox->id()] = mailbox;
   return success();
 }
 
 void_result mailman::unregister_mailbox(const shared_ptr<mailbox> &mailbox)
 {
-  _mailboxes[mailbox->get_topic()][mailbox->get_id()]->set_outgoing_mail_callback(mailbox::outgoing_mail_callback_t());
-  _mailboxes[mailbox->get_topic()].erase(mailbox->get_id());
+  _mailboxes[mailbox->topic()][mailbox->id()]->set_outgoing_mail_callback(mailbox::outgoing_mail_callback_t());
+  _mailboxes[mailbox->topic()].erase(mailbox->id());
 
   // remove the topic if id was the last mailbox
-  if(!_mailboxes[mailbox->get_topic()].size()) _mailboxes.erase(mailbox->get_topic());
+  if(!_mailboxes[mailbox->topic()].size()) _mailboxes.erase(mailbox->topic());
   
   return success();
 }
@@ -33,7 +33,7 @@ void_result mailman::send(const uint32_t sender_id, unique_ptr<packet> p)
   shared_ptr<packet> pack = make_shared<packet>(*p.release());
 
   // send packet to all registered mailboxes for this topic besides the sender one
-  auto it = _mailboxes.find(pack->get_topic());
+  auto it = _mailboxes.find(pack->topic());
   if(it != _mailboxes.end())
   {
     for(const auto &mailbox : it->second)

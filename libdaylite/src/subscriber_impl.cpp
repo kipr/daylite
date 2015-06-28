@@ -8,7 +8,7 @@ subscriber_impl::subscriber_impl(const shared_ptr<mailbox> &mailbox, subscriber:
 {
   _mailbox->set_incoming_mail_callback([callback,usr_arg](const shared_ptr<packet> &packet)
   {
-    if(callback) callback(packet->get_msg(), usr_arg);
+    if(callback) callback(packet->msg(), usr_arg);
     return success();
   });
 }

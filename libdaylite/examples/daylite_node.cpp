@@ -11,6 +11,15 @@
 using namespace daylite;
 using namespace std;
 
+void print_bson(const bson_t *const msg)
+{
+  size_t len;
+  char *str;
+  str = bson_as_json (msg, &len);
+  cout << str << endl;
+  bson_free (str);
+}
+
 int main(int argc, char *argv[])
 {
   node *me = node::create_node("node");
@@ -35,6 +44,12 @@ int main(int argc, char *argv[])
     node::destroy_node(me);
     return 1;
   }
+  
+  auto sub = me->subscribe("/test", [](const bson_t *msg, void *)
+    {
+      std::cout << "Got packet" << std::endl;
+      print_bson(msg);
+    });
 
   for(;;)
   {

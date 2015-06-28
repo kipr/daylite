@@ -24,14 +24,14 @@ namespace daylite
     void_result set_incoming_mail_callback(const incoming_mail_callback_t &incoming_mail_callback);
     void_result set_outgoing_mail_callback(const outgoing_mail_callback_t &outgoing_mail_callback);
 
-    topic get_topic() const { return _topic; }
-    size_t get_id() const;
+    const class topic &topic() const { return _topic; }
+    size_t id() const;
 
     void_result place_incoming_mail(const std::shared_ptr<packet> &packet);
     void_result place_outgoing_mail(std::unique_ptr<packet> packet);
 
   private:
-    topic _topic;
+    class topic _topic;
     incoming_mail_callback_t _incoming_mail_callback;
     outgoing_mail_callback_t _outgoing_mail_callback;
   };

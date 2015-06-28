@@ -20,7 +20,7 @@ void node::destroy_node(node *node_ptr)
 
 node_impl::node_impl(const string &name, const option<socket_address> &us)
   : _name(name)
-  , _dave(std::make_unique<mailman>(mailman()))
+  , _dave(make_unique<mailman>(mailman()))
 {
 }
 
