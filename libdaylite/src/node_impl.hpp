@@ -26,7 +26,7 @@ namespace daylite
   class tcp_socket;
   class tcp_server;
 
-  class node_impl : public node, private tcp_server_listener
+  class node_impl : public node, private tcp_server_listener, private spinett
   {
   public:
 
@@ -41,11 +41,8 @@ namespace daylite
 
     const std::string &get_name() const { return _name; }
 
-    publisher *advertise(const std::string &topic);
-    void destroy_publisher(publisher *pub);
-
-    subscriber *subscribe(const std::string &topic, subscriber::subscriber_callback_t callback, void *usr_arg);
-    void destroy_subscriber(subscriber *sub);
+    std::shared_ptr<publisher> advertise(const std::string &topic);
+    std::shared_ptr<subscriber> subscribe(const std::string &topic, subscriber::subscriber_callback_t callback, void *usr_arg);
 
     result<std::shared_ptr<publisher>> advertise(const topic &topic);
     result<std::shared_ptr<subscriber>> subscribe(const topic &topic, subscriber::subscriber_callback_t cb);
@@ -53,6 +50,8 @@ namespace daylite
   private:
     virtual void server_connection(tcp_socket *const socket);
     virtual void server_disconnection(tcp_socket *const socket);
+
+    virtual void_result spin_update();
 
     std::string _name;
     std::unique_ptr<mailman> _dave;

@@ -8,14 +8,9 @@
 using namespace daylite;
 using namespace std;
 
-node *node::create_node(const std::string &name)
+shared_ptr<node> node::create_node(const std::string &name)
 {
-  return new node_impl(name, none<socket_address>());
-}
-
-void node::destroy_node(node *node_ptr)
-{
-  delete node_ptr;
+  return shared_ptr<node>(new node_impl(name, none<socket_address>()));
 }
 
 node_impl::node_impl(const string &name, const option<socket_address> &us)
@@ -85,30 +80,20 @@ void_result node_impl::leave_daylite()
   return success();
 }
 
-publisher *node_impl::advertise(const std::string &t)
+shared_ptr<publisher> node_impl::advertise(const std::string &t)
 {
   auto mb = std::make_shared<mailbox>(topic(t));
   auto pub = new publisher_impl(mb);
   auto ret = _dave->register_mailbox(mb);
-  return ret ? pub : nullptr;
+  return shared_ptr<publisher>(ret ? pub : nullptr);
 }
 
-void node_impl::destroy_publisher(publisher *pub)
-{
-  delete pub;
-}
-
-subscriber *node_impl::subscribe(const std::string &t, subscriber::subscriber_callback_t callback, void* usr_arg)
+shared_ptr<subscriber> node_impl::subscribe(const std::string &t, subscriber::subscriber_callback_t callback, void* usr_arg)
 {
   auto mb = std::make_shared<mailbox>(topic(t));
   auto sub = new subscriber_impl(mb, callback, usr_arg);
   auto ret = _dave->register_mailbox(mb);
-  return ret ? sub : nullptr;
-}
-
-void node_impl::destroy_subscriber(subscriber *sub)
-{
-  delete sub;
+  return shared_ptr<subscriber>(ret ? sub : nullptr);
 }
 
 void node_impl::server_connection(tcp_socket *const socket)
@@ -133,4 +118,14 @@ void node_impl::server_disconnection(tcp_socket *const socket)
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket) { ++it; continue; }
     it = _remotes.erase(it);
   }
+}
+
+void_result node_impl::spin_update()
+{
+  for(auto it = _remotes.begin(); it != _remotes.end();)
+  {
+    if(dynamic_cast<tcp_transport *>((*it)->link())->socket()) { ++it; continue; }
+    it = _remotes.erase(it);
+  }
+  return success();
 }

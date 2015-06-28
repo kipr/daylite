@@ -94,16 +94,19 @@ void_result tcp_server::spin_update()
     it = _clients.erase(it);
   }
 
-  result<tcp_socket *> client_result = _socket.accept();
-  if(!client_result) return success();
+  for(;;)
+  {
+    result<tcp_socket *> client_result = _socket.accept();
+    if(!client_result) break;
 
-  DAYLITE_DEBUG_STREAM("Got client");
+    DAYLITE_DEBUG_STREAM("Got client");
 
-  tcp_socket *client = client_result.unwrap();
-  client->set_blocking(false);
-  _clients.push_back(client);
+    tcp_socket *client = client_result.unwrap();
+    client->set_blocking(false);
+    _clients.push_back(client);
 
-  for(auto listener : _listeners) listener->server_connection(client);
+    for(auto listener : _listeners) listener->server_connection(client);
+  }
 
   return success();
 }

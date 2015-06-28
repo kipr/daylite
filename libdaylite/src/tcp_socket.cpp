@@ -133,7 +133,15 @@ tcp_socket::~tcp_socket()
 
 void_result tcp_socket::open()
 {
-  return get_std_error(_fd = ::socket(AF_INET, SOCK_STREAM, 0));
+  void_result res = get_std_error(_fd = ::socket(AF_INET, SOCK_STREAM, 0));
+  if(res)
+  {
+#ifndef __linux__
+  int set = 1;
+  setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+#endif
+  }
+  return res;
 }
 
 void tcp_socket::close()
@@ -223,14 +231,22 @@ void_result tcp_socket::set_blocking(const bool blocking)
 
 result<size_t> tcp_socket::send(const uint8_t *const data, const size_t size, const comm_flags flags)
 {
-  ssize_t ret = ::send(_fd, (char*)data, size, flags == comm_peek ? MSG_PEEK : 0);
+  int additional_flags = 0;
+#if __linux__
+  additional_flags |= MSG_NOSIGNAL;
+#endif
+  ssize_t ret = ::send(_fd, (char*)data, size, (flags == comm_peek ? MSG_PEEK : 0) | additional_flags);
   if(ret < 0) return failure<size_t>(strerror(errno), errno);
   return success<size_t>(ret);
 }
 
 result<size_t> tcp_socket::recv(uint8_t *const data, const size_t size, const comm_flags flags)
 {
-  ssize_t ret = ::recv(_fd, (char *)data, size, flags == comm_peek ? MSG_PEEK : 0);
+  int additional_flags = 0;
+#if __linux__
+  additional_flags |= MSG_NOSIGNAL;
+#endif
+  ssize_t ret = ::recv(_fd, (char *)data, size, (flags == comm_peek ? MSG_PEEK : 0) | additional_flags);
   if(ret < 0)
   {
     update_errno();
@@ -257,4 +273,8 @@ tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)
   : _fd(fd)
   , _associated_address(assoc)
 {
+#ifndef __linux__
+  int set = 1;
+  setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+#endif
 }

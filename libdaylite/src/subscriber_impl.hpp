@@ -18,7 +18,8 @@ namespace daylite
   class subscriber_impl : public subscriber
   {
   public:
-    subscriber_impl(const std::shared_ptr<mailbox> &mailbox, subscriber::subscriber_callback_t callback, void* usr_arg);
+    subscriber_impl(const std::shared_ptr<mailbox> &mailbox,
+      subscriber::subscriber_callback_t callback, void* usr_arg);
 
   private:
     std::shared_ptr<mailbox> _mailbox;
