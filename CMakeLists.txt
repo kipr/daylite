@@ -20,9 +20,9 @@ endif()
 ################################################################################
 
 if(WIN32)
-  find_file(LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/bin" NO_DEFAULT_PATH)
-  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/include/libbson-1.0" NO_DEFAULT_PATH)
-  find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../libbson/build/install/lib" NO_DEFAULT_PATH)
+  find_file(LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/bin" NO_DEFAULT_PATH)
+  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/include/libbson-1.0" NO_DEFAULT_PATH)
+  find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/lib" NO_DEFAULT_PATH)
 elseif(APPLE)
   set(LIBBSON_INCLUDE_DIR "/usr/local/include/libbson-1.0")
   set(LIBBSON_LIBRARY "bson-1.0")
