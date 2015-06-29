@@ -272,7 +272,7 @@ tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)
 
 void tcp_socket::setup_socket()
 {
-#ifndef __linux__
+#if !defined (__linux__) && !defined(WIN32)
   int set = 1;
   setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 #endif
