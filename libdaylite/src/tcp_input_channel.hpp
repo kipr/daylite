@@ -3,7 +3,6 @@
 
 #include "input_channel.hpp"
 
-#include <chrono>
 #include <vector>
 
 namespace daylite
@@ -16,22 +15,11 @@ namespace daylite
     tcp_input_channel(tcp_socket *const socket);
     ~tcp_input_channel();
     
-    inline void set_timeout(const std::chrono::milliseconds &timeout)
-    {
-      _timeout = timeout;
-    }
-    
-    inline const std::chrono::milliseconds &timeout() const
-    {
-      return _timeout;
-    }
-    
     virtual result<packet> read();
     virtual bool is_available() const;
     
   private:
     tcp_socket *_socket;
-    std::chrono::milliseconds _timeout;
     std::vector<uint8_t> _buffer;
   };
 }

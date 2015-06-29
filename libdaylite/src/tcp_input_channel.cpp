@@ -7,19 +7,9 @@
 #include <errno.h>
 
 using namespace daylite;
-using namespace std::chrono;
-
-namespace
-{
-  inline milliseconds elapsed(const steady_clock::time_point &start)
-  {
-    return duration_cast<milliseconds>(steady_clock::now() - start);
-  }
-}
 
 tcp_input_channel::tcp_input_channel(tcp_socket *const socket)
   : _socket(socket)
-  , _timeout(1000)
 {
 }
 
@@ -32,32 +22,29 @@ result<packet> tcp_input_channel::read()
   // Socket cannot be blocking. Hard fail (programmatic error).
   assert_result_eq(_socket->blocking(), false);
 
-  const auto start = steady_clock::now();
-
   uint8_t tmp[0xFFFF];
 
-  // Read the size of the data to come (max 2^32 - 1) or until time is up
-  while(_buffer.size() < sizeof(uint32_t) && elapsed(start) < _timeout)
+  // Read the size of the data to come (max 2^32 - 1)
+  if(_buffer.size() < sizeof(uint32_t))
   {
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
-    if(ret.code() == EAGAIN) continue;
-    if(!ret) return failure<packet>(ret.message());
+    if(!ret) return failure<packet>(ret.message(), ret.code());
     _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
 
-  if(elapsed(start) >= _timeout) return failure<packet>("Ran out of time");
+  // got something but not all
+  if(_buffer.size() < sizeof(uint32_t)) return failure<packet>("Ran out of time", EAGAIN);
 
   // Keep reading until time is up or we reach the requisite length
   uint32_t target_size = *reinterpret_cast<uint32_t *>(_buffer.data());
-  while(_buffer.size() < target_size && elapsed(start) < _timeout)
+  if(_buffer.size() < target_size)
   {
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
-    if(ret.code() == EAGAIN) continue;
-    if(!ret) return failure<packet>(ret.message());
+    if(!ret) return failure<packet>(ret.message(), ret.code());
     _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
 
-  if(elapsed(start) >= _timeout) return failure<packet>("Ran out of time");
+  if(_buffer.size() < target_size) return failure<packet>("Ran out of time", EAGAIN);
 
   // Got all of the packet. Chop it off of the buffer and return it.
   bson_reader_t *reader;
