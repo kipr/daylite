@@ -35,11 +35,12 @@ result<packet> tcp_input_channel::read()
   // got something but not all
   if(_buffer.size() < sizeof(uint32_t)) return failure<packet>("Ran out of time", EAGAIN);
 
-  // Keep reading until time is up or we reach the requisite length
+  // Keep reading until we reach the requisite length
   uint32_t target_size = *reinterpret_cast<uint32_t *>(_buffer.data());
-  if(_buffer.size() < target_size)
+  while(_buffer.size() < target_size)
   {
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
+    if(ret.code() == EAGAIN) break;
     if(!ret) return failure<packet>(ret.message(), ret.code());
     _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
