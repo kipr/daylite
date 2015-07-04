@@ -57,7 +57,7 @@ void_result tcp_transport::close()
   delete _output_channel;
   _output_channel = 0;
   
-  _socket->close();
+  if(_socket) _socket->close();
   if(_owns) delete _socket;
   _socket = 0;
   
