@@ -5,6 +5,8 @@
 
 #include <bson.h>
 
+#include <functional>
+
 #include "daylite/compat.hpp"
 
 namespace daylite
