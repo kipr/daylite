@@ -40,6 +40,7 @@ Requirements
 
 * CMake 2.8.0 or higher
 * libbson
+* boost
 
 Building (OS X and Linux)
 =========================

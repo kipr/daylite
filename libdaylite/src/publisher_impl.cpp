@@ -3,9 +3,17 @@
 using namespace daylite;
 using namespace std;
 
-publisher_impl::publisher_impl(const shared_ptr<mailbox> &mailbox)
-  : _mailbox(mailbox)
+publisher_impl::publisher_impl(const topic &t, const std::shared_ptr<mailman> &dave)
+  : _t(t)
+  , _dave(dave)
+  , _mailbox(make_shared<mailbox>(t))
 {
+  _dave->register_mailbox(_mailbox);
+}
+
+publisher_impl::~publisher_impl()
+{
+  _dave->unregister_mailbox(_mailbox);
 }
 
 void_result publisher_impl::publish(const bson_t *msg)

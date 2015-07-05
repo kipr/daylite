@@ -17,7 +17,7 @@ shared_ptr<node> node::create_node(const std::string &name)
 
 node_impl::node_impl(const string &name, const option<socket_address> &us)
   : _name(name)
-  , _dave(make_unique<mailman>(mailman()))
+  , _dave(make_shared<mailman>(mailman()))
 {
 }
 
@@ -84,18 +84,12 @@ void_result node_impl::leave_daylite()
 
 shared_ptr<publisher> node_impl::advertise(const std::string &t)
 {
-  auto mb = std::make_shared<mailbox>(topic(t));
-  auto pub = new publisher_impl(mb);
-  auto ret = _dave->register_mailbox(mb);
-  return shared_ptr<publisher>(ret ? pub : nullptr);
+  return shared_ptr<publisher>(new publisher_impl(topic(t), _dave));
 }
 
 shared_ptr<subscriber> node_impl::subscribe(const std::string &t, subscriber::subscriber_callback_t callback, void* usr_arg)
 {
-  auto mb = std::make_shared<mailbox>(topic(t));
-  auto sub = new subscriber_impl(mb, callback, usr_arg);
-  auto ret = _dave->register_mailbox(mb);
-  return shared_ptr<subscriber>(ret ? sub : nullptr);
+  return shared_ptr<subscriber>(new subscriber_impl(topic(t), _dave, callback, usr_arg));
 }
 
 void node_impl::server_connection(tcp_socket *const socket)

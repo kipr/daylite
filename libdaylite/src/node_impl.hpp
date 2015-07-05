@@ -5,6 +5,8 @@
 #include <memory>
 #include <vector>
 
+#include <boost/uuid/uuid.hpp>
+
 #include "daylite/node.hpp"
 #include "daylite/publisher.hpp"
 #include "daylite/subscriber.hpp"
@@ -54,10 +56,12 @@ namespace daylite
     virtual void_result spin_update();
 
     std::string _name;
-    std::unique_ptr<mailman> _dave;
+    std::shared_ptr<mailman> _dave;
 
     std::unique_ptr<tcp_server> _server;
     std::vector<std::shared_ptr<remote_node>> _remotes;
+    
+    boost::uuids::uuid _id;
   };
 }
 
