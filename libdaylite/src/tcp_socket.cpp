@@ -170,8 +170,16 @@ void_result tcp_socket::connect(const socket_address &address)
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
   
-  void_result ret = get_std_error(::connect(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
-  if(ret) _associated_address = some(address);
+  const bool blocking_mode = blocking();
+  
+  set_blocking(true);
+  const int res = ::connect(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in));
+  void_result ret = get_std_error(res);
+  set_blocking(blocking_mode);
+  if(ret)
+  {
+    _associated_address = some(address);
+  }
   return ret;
 }
 
