@@ -28,5 +28,13 @@ elseif(APPLE)
   set(LIBBSON_LIBRARY "bson-1.0")
 endif()
 
+################################################################################
+#   Find boost                                                                 #
+################################################################################
+
+if(WIN32)
+  find_path(BOOST_INCLUDE_DIR boost PATHS "C:/Program Files/boost/boost_1_55_0" NO_DEFAULT_PATH)
+endif()
+
 add_subdirectory(libdaylite)
 add_subdirectory(daylited)

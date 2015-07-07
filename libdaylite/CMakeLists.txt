@@ -11,7 +11,7 @@ file(GLOB LIBDAYLITE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
 #   Include/link directories                                                   #
 ################################################################################
 
-include_directories(${INCLUDE} ${LIBBSON_INCLUDE_DIR})
+include_directories(${INCLUDE} ${LIBBSON_INCLUDE_DIR} ${BOOST_INCLUDE_DIR})
 
 add_library(daylite SHARED ${LIBDAYLITE_SOURCES} ${LIBDAYLITE_INCLUDES})
 
