@@ -6,6 +6,10 @@ if(NOT WIN32)
   add_definitions(-std=c++1y)
 endif()
 
+if(APPLE)
+  add_definitions(-Wno-deprecated-register)
+endif()
+
 if(NOT WIN32)
   option(debug "Build in debug mode" ON)
   if(debug)
@@ -20,12 +24,12 @@ endif()
 ################################################################################
 
 if(WIN32)
-  find_file(LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/bin" NO_DEFAULT_PATH)
-  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/include/libbson-1.0" NO_DEFAULT_PATH)
-  find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/lib" NO_DEFAULT_PATH)
+  find_file(LIBBSON_DLL libbson-1.0.dll PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/bin")
+  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/include/libbson-1.0")
+  find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/lib")
 elseif(APPLE)
-  set(LIBBSON_INCLUDE_DIR "/usr/local/include/libbson-1.0")
-  set(LIBBSON_LIBRARY "bson-1.0")
+  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "/usr/local/include/libbson-1.0")
+  find_library(LIBBSON_LIBRARY bson-1.0)
 endif()
 
 ################################################################################
@@ -33,7 +37,7 @@ endif()
 ################################################################################
 
 if(WIN32)
-  find_path(BOOST_INCLUDE_DIR boost PATHS "C:/Program Files/boost/boost_1_55_0" NO_DEFAULT_PATH)
+  find_path(BOOST_INCLUDE_DIR boost PATHS "C:/Program Files/boost/boost_1_55_0")
 endif()
 
 add_subdirectory(libdaylite)
