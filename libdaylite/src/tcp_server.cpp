@@ -79,8 +79,6 @@ void_result tcp_server::spin_update()
     // if there's still a connection but no data, it will return the EAGAIN error.
     if(!ret || ret.unwrap() > 0) { ++it; continue; }
 
-    DAYLITE_DEBUG_STREAM("client disconnected");
-
     for(auto listener : _listeners) listener->server_disconnection(client);
 
     client->close();
@@ -93,8 +91,6 @@ void_result tcp_server::spin_update()
   {
     result<tcp_socket *> client_result = _socket.accept();
     if(!client_result) break;
-
-    DAYLITE_DEBUG_STREAM("Got client");
 
     tcp_socket *client = client_result.unwrap();
     _clients.push_back(client);
