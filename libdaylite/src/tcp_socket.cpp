@@ -157,8 +157,15 @@ void_result tcp_socket::bind(const socket_address &address)
   
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
   if(!addr.some()) return get_std_error();
+
+  void_result ret;
+#ifndef WIN32
+  int enable = 1;
+  ret = get_std_error(::setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)));
+  if(!ret) return ret;
+#endif
   
-  void_result ret = get_std_error(::bind(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  ret = get_std_error(::bind(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
   if(ret) _associated_address = some(address);
   return ret;
 }
