@@ -5,7 +5,7 @@ next-generation Botball robot controller from [KIPR](http://kipr.org/). Its desi
 [ROS](http://www.ros.org/). Daylite, however, is simple to build, install, and use in comparison, with
 no external dependencies or extra tooling required. It also makes several different design choices.
 
-Daylite is named after the song [Daylight by Andrew Rayel](https://www.youtube.com/watch?v=DV7YAkIaD44).
+Daylite is named after the song [Daylight by Andrew Rayel](https://www.youtube.com/watch?v=wmoyqXaWT0g).
 It was the song that was playing when I decided I needed to make this. Unfortunately, the variable
 `daylight` is defined in `time.h` and as such cannot be used for a namespace.
 
