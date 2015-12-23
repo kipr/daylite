@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <new>
 #include <string>
+#include <cstring>
 
 namespace daylite
 {
