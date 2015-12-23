@@ -28,7 +28,7 @@ if(WIN32)
   find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/include/libbson-1.0")
   find_library(LIBBSON_LIBRARY bson-1.0.lib PATHS "${PROJECT_SOURCE_DIR}/../prefix/usr/lib")
 elseif(UNIX)
-  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "/usr/local/include/libbson-1.0")
+  find_path(LIBBSON_INCLUDE_DIR bson.h PATHS "/usr/include/libbson-1.0" "/usr/local/include/libbson-1.0")
   find_library(LIBBSON_LIBRARY bson-1.0)
 endif()
 
