@@ -22,7 +22,8 @@ publisher_impl::~publisher_impl()
 
 void_result publisher_impl::publish(const bson_t *msg)
 {
-  return publish(make_unique<packet>(_mailbox->topic(), msg));
+  _parent->update_time();
+  return publish(make_unique<packet>(_mailbox->topic(), _parent->time(), msg));
 }
 
 void_result publisher_impl::publish(unique_ptr<packet> packet)

@@ -54,12 +54,23 @@ namespace daylite
 
     inline const std::unordered_map<decltype(node_info::id), node_info> &latest_info() const { return _latest_info; }
 
+    inline uint32_t id() const
+    {
+      uint32_t ret;
+      memcpy(&ret, _id.data, sizeof(ret));
+      return ret;
+    }
+
+    bool touch_node(uint32_t id);
+    void prune_nodes();
+    inline const network_time &time() const { return _network_time; }
+    void update_time();
+
+  private:
     void register_subscriber(subscriber_impl *const subscriber);
     void register_publisher(publisher_impl *const publisher);
     void unregister_subscriber(subscriber_impl *const subscriber);
     void unregister_publisher(publisher_impl *const publisher);
-  private:
-
     struct node_info info() const;
     void send_info();
 
@@ -80,6 +91,13 @@ namespace daylite
     
     boost::uuids::uuid _id;
     std::unordered_map<decltype(node_info::id), node_info> _latest_info;
+    std::unordered_map<std::string, uint32_t> _subscription_count;
+
+    network_time _network_time;
+    timeval _last_time;
+    timeval _last_prune;
+
+    network_time _keepalive;
   };
 }
 

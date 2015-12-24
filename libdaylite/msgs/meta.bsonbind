@@ -1,0 +1,5 @@
+%package daylite
+string topic!
+network_time stamp!
+uint32 id!
+uint32[] path!

@@ -6,6 +6,7 @@
 #include "mailman.hpp"
 #include "network_interfaces.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <sys/time.h>
 
 #include <iostream>
 
@@ -26,12 +27,23 @@ void print_bson(const bson_t *const msg)
   bson_free (str);
 }
 
+static inline bool operator >(const network_time &l, const network_time &r)
+{
+  return l.seconds > r.seconds || (l.seconds == r.seconds && l.microseconds > r.microseconds);
+}
+
 node_impl::node_impl(const string &name, const option<socket_address> &us)
   : _name(name)
   , _dave(make_shared<mailman>(mailman()))
   , _mailbox(new mailbox(topic::internal, [this] (std::shared_ptr<packet> p) {
       node_info info;
-      print_bson(p->msg());
+      print_bson(p->packed());
+      update_time();
+      if(p->stamp() > _network_time)
+      {
+        _network_time = p->stamp();
+      }
+
       try
       {
         info = node_info::unbind(p->msg());
@@ -40,7 +52,16 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       {
         std::cerr << "Failed to unbind node info. Something is probably very wrong. (" << e.what() << ")" << std::endl;
       }
+      auto lit = _latest_info.find(info.id);
+      if(lit != _latest_info.end())
+      {
+        for(const auto &topic : _latest_info[info.id].in_topics) --_subscription_count[topic];
+      }
+
       _latest_info[info.id] = info;
+      for(const auto &topic : _latest_info[info.id].in_topics) ++_subscription_count[topic];
+      
+
       for(auto it = _latest_info.begin(); it != _latest_info.end(); ++it)
       {
         cout << it->first << ":" << endl;
@@ -52,9 +73,15 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       return success();
     }))
 {
+  gettimeofday(&_last_time, 0);
+  gettimeofday(&_last_prune, 0);
+  _network_time.seconds = 0;
+  _network_time.microseconds = 0;
   boost::uuids::basic_random_generator<boost::mt19937> gen;
   _id = gen();
   _dave->register_mailbox(_mailbox);
+  _keepalive.seconds = 10;
+  _keepalive.microseconds = 0;
 }
 
 node_impl::~node_impl()
@@ -105,7 +132,7 @@ void_result node_impl::join_daylite(const std::string &gateway_host, uint16_t ga
   auto gateway_transport = make_unique<tcp_transport>(gateway);
   if(!(ret = gateway_transport->open())) return ret;
 
-  auto gateway_node = make_shared<remote_node>(move(gateway_transport));
+  auto gateway_node = make_shared<remote_node>(this, move(gateway_transport));
   _dave->register_mailbox(gateway_node);
   _remotes.push_back(gateway_node);
   send_info();
@@ -167,15 +194,93 @@ struct node_info node_impl::info() const
   node_info ret;
   memcpy(&ret.id, _id.data, sizeof(ret.id));
   ret.hosts = network_interfaces::interfaces();
+  ret.maxkeepalive = _keepalive;
+  ret.keepalive = ret.maxkeepalive;
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
   for(auto s : _active_publishers) ret.out_topics.push_back(s->topic().name());
   return ret;
 }
 
+bool node_impl::touch_node(uint32_t id)
+{
+  auto it = _latest_info.find(id);
+  if(it == _latest_info.end()) return false;
+  it->second.keepalive = it->second.maxkeepalive;
+  return true;
+}
+
+void node_impl::prune_nodes()
+{
+  timeval now;
+  gettimeofday(&now, nullptr);
+  
+  timeval diff;
+  timersub(&now, &_last_prune, &diff);
+
+  std::cout << "time since last prune: " << diff.tv_sec << std::endl;
+  for(auto it = _latest_info.begin(); it != _latest_info.end();)
+  {
+    auto &ka = it->second.keepalive;
+    timeval k;
+    k.tv_sec = ka.seconds;
+    k.tv_usec = ka.microseconds;
+
+    if(timercmp(&diff, &k, >))
+    {
+      // Prune
+      std::cout << "Pruning " << it->first << std::endl;
+      it = _latest_info.erase(it);
+      continue;
+    }
+    
+    timeval ans;
+    timersub(&k, &diff, &ans);
+    ka.seconds = ans.tv_sec;
+    ka.microseconds = ans.tv_usec;
+    std::cout << "Node " << it->first << " now has " << ka.seconds << " remaining" << std::endl;
+
+    ++it;
+  }
+
+  _last_prune = now;
+}
+
 void node_impl::send_info() 
 {
-  packet p(topic::internal, info().bind());
+  auto i = info().bind();
+  update_time();
+  packet p(topic::internal, _network_time, i);
+  bson_destroy(i);
   _mailbox->place_outgoing_mail(make_unique<packet>(p));
+  prune_nodes();
+  for(auto peer : _latest_info)
+  {
+    auto i = peer.second.bind();
+    packet p(topic::internal, _network_time, i);
+    bson_destroy(i);
+    _mailbox->place_outgoing_mail(make_unique<packet>(p));
+  }
+}
+
+void node_impl::update_time()
+{
+  timeval now;
+  gettimeofday(&now, nullptr);
+  
+  timeval diff;
+  timersub(&now, &_last_time, &diff);
+
+  timeval net;
+  net.tv_sec = _network_time.seconds;
+  net.tv_usec = _network_time.microseconds;
+
+  timeval ans;
+  timeradd(&net, &diff, &ans);
+
+  _network_time.microseconds = ans.tv_usec;
+  _network_time.seconds = ans.tv_sec;
+
+  _last_time = now;
 }
 
 void node_impl::server_connection(tcp_socket *const socket)
@@ -188,7 +293,7 @@ void node_impl::server_connection(tcp_socket *const socket)
     return;
   }
 
-  auto remote = make_shared<remote_node>(move(transport));
+  auto remote = make_shared<remote_node>(this, move(transport));
   _dave->register_mailbox(remote);
   _remotes.push_back(remote);
   send_info();

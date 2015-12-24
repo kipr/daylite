@@ -1,0 +1,3 @@
+%package daylite
+uint32 seconds!
+uint32 microseconds!
