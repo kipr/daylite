@@ -9,6 +9,7 @@
 #include "daylite/result.hpp"
 #include "spinner_impl.hpp"
 #include "mailbox.hpp"
+#include "node_info.hpp"
 
 namespace daylite
 {
@@ -21,6 +22,7 @@ namespace daylite
     virtual ~remote_node();
 
     inline transport *link() const { return _link.get(); }
+
 
   private:
     virtual void_result spin_update();

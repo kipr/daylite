@@ -1,0 +1,4 @@
+%package daylite
+string name!
+string address!
+string netmask!

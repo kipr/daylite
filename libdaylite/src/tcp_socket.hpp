@@ -48,7 +48,7 @@ namespace daylite
   private:
     tcp_socket(int fd, const option<socket_address> &assoc = none<socket_address>());
     
-    void setup_socket();
+    void_result setup_socket();
     
     int _fd;
     option<socket_address> _associated_address;

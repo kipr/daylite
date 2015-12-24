@@ -37,7 +37,8 @@ void_result remote_node::spin_update()
     auto p = in.unwrap()->read();
     if(!p) break;
 
-    place_outgoing_mail(make_unique<packet>(p.unwrap()));
+    auto p_val = p.unwrap();
+    place_outgoing_mail(make_unique<packet>(p_val));
   }
 
   return success();

@@ -6,12 +6,20 @@ set(INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(GLOB LIBDAYLITE_INCLUDES ${INCLUDE}/daylite/*)
 file(GLOB LIBDAYLITE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*")
+file(GLOB LIBDAYLITE_MSGS "${CMAKE_CURRENT_SOURCE_DIR}/msgs/*")
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+find_package(BsonBind REQUIRED)
+find_package(BSON REQUIRED)
+
+add_bson_binds(BSON_BIND_INCLUDES ${LIBDAYLITE_MSGS})
+list(APPEND LIBDAYLITE_INCLUDES ${BSON_BIND_INCLUDES})
 
 ################################################################################
 #   Include/link directories                                                   #
 ################################################################################
 
-include_directories(${INCLUDE} ${LIBBSON_INCLUDE_DIR} ${BOOST_INCLUDE_DIR})
+include_directories(${INCLUDE} ${BSON_INCLUDE_DIR} ${BOOST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(daylite SHARED ${LIBDAYLITE_SOURCES} ${LIBDAYLITE_INCLUDES})
 

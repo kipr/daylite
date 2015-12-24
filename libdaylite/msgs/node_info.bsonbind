@@ -1,0 +1,15 @@
+%package daylite
+
+# The node id is expected to remain
+# constant for the lifetime of the node.
+# This value must be unique on the network
+uint32 id!
+
+network_interface[] hosts!
+uint16 port!
+
+# Subscriptions
+string[] in_topics!
+
+# Publications
+string[] out_topics!

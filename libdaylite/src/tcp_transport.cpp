@@ -43,6 +43,8 @@ void_result tcp_transport::open()
     }
   }
 
+  _socket->set_blocking(false);
+
   _input_channel  = new tcp_input_channel(_socket);
   _output_channel = new tcp_output_channel(_socket);
   

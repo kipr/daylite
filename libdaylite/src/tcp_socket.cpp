@@ -282,14 +282,17 @@ tcp_socket::tcp_socket(int fd, const option<socket_address> &assoc)
   : _fd(fd)
   , _associated_address(assoc)
 {
-  setup_socket();
+  if(!setup_socket())
+  {
+    std::cerr << "Failed to setup socket!" << std::endl;
+  }
 }
 
-void tcp_socket::setup_socket()
+void_result tcp_socket::setup_socket()
 {
 #if !defined (__linux__) && !defined(WIN32)
   int set = 1;
   setsockopt(_fd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 #endif
-  set_blocking(false);
+  return set_blocking(false);
 }

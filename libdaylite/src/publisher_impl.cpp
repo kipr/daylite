@@ -1,18 +1,22 @@
 #include "publisher_impl.hpp"
+#include "node_impl.hpp"
 
 using namespace daylite;
 using namespace std;
 
-publisher_impl::publisher_impl(const topic &t, const std::shared_ptr<mailman> &dave)
-  : _t(t)
+publisher_impl::publisher_impl(node_impl *const parent, const daylite::topic &t, const std::shared_ptr<mailman> &dave)
+  : _parent(parent)
+  , _t(t)
   , _dave(dave)
   , _mailbox(make_shared<mailbox>(t))
 {
+  _parent->register_publisher(this);
   _dave->register_mailbox(_mailbox);
 }
 
 publisher_impl::~publisher_impl()
 {
+  _parent->unregister_publisher(this);
   _dave->unregister_mailbox(_mailbox);
 }
 

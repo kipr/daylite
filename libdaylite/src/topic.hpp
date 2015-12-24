@@ -14,6 +14,7 @@ namespace daylite
     inline const std::string &name() const { return _name; }
 
     static const topic any;
+    static const topic internal;
 
   private:
     std::string _name;

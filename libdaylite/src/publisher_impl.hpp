@@ -15,17 +15,22 @@
 
 namespace daylite
 {
+  class node_impl;
+
   class publisher_impl : public publisher
   {
   public:
-    publisher_impl(const topic &t, const std::shared_ptr<mailman> &dave);
+    publisher_impl(node_impl *const parent, const daylite::topic &t, const std::shared_ptr<mailman> &dave);
     ~publisher_impl();
 
     void_result publish(const bson_t *msg);
     void_result publish(std::unique_ptr<packet> packet);
 
+    inline class daylite::topic topic() const { return _t; }
+
   private:
-    topic _t;
+    node_impl *_parent;
+    daylite::topic _t;
     std::shared_ptr<mailman> _dave;
     std::shared_ptr<mailbox> _mailbox;
   };
