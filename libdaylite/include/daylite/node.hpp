@@ -14,11 +14,9 @@ namespace daylite
   {
     static std::shared_ptr<node> create_node(const std::string &name);
 
-    virtual void_result start_gateway_service(const std::string &local_host, uint16_t local_port) = 0;
-    virtual void_result stop_gateway_service() = 0;
-
-    virtual void_result join_daylite(const std::string &gateway_host, uint16_t gateway_port) = 0;
-    virtual void_result leave_daylite() = 0;
+    virtual void_result start(const std::string &known_host, uint16_t known_port) = 0;
+    virtual void_result gateway(const std::string &host, const uint16_t port) = 0;
+    virtual void_result stop() = 0;
 
     virtual const std::string &get_name() const = 0;
 

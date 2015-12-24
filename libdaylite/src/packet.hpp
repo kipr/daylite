@@ -26,6 +26,8 @@ namespace daylite
     inline const struct meta &meta() const { return _meta; }
     inline class topic topic() const { return daylite::topic(_meta.topic); }
     inline const struct network_time &stamp() const { return _meta.stamp; }
+
+    void build();
     
     packet &operator =(packet &&rhs);
     packet &operator =(const packet &rhs);

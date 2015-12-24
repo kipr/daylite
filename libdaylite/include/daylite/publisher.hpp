@@ -12,6 +12,7 @@ namespace daylite
 {
   struct DLL_EXPORT publisher
   {
+    virtual unsigned subscriber_count() = 0;
     virtual void_result publish(const bson_t *msg) = 0;
   };
 }

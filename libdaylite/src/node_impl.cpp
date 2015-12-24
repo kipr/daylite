@@ -52,6 +52,9 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       {
         std::cerr << "Failed to unbind node info. Something is probably very wrong. (" << e.what() << ")" << std::endl;
       }
+
+      if(info.id == id()) return success();
+
       auto lit = _latest_info.find(info.id);
       if(lit != _latest_info.end())
       {
@@ -59,7 +62,10 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       }
 
       _latest_info[info.id] = info;
-      for(const auto &topic : _latest_info[info.id].in_topics) ++_subscription_count[topic];
+      for(const auto &topic : _latest_info[info.id].in_topics)
+      {
+        ++_subscription_count[topic];
+      }
       
 
       for(auto it = _latest_info.begin(); it != _latest_info.end(); ++it)
@@ -72,15 +78,16 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       }
       return success();
     }))
+  , _id(std::hash<std::string>()(_name))
 {
   gettimeofday(&_last_time, 0);
   gettimeofday(&_last_prune, 0);
+  srand(_last_time.tv_sec * 1000000 + _last_time.tv_usec);
+  _id ^= rand();
   _network_time.seconds = 0;
   _network_time.microseconds = 0;
-  boost::uuids::basic_random_generator<boost::mt19937> gen;
-  _id = gen();
   _dave->register_mailbox(_mailbox);
-  _keepalive.seconds = 10;
+  _keepalive.seconds = 3600;
   _keepalive.microseconds = 0;
 }
 
@@ -90,6 +97,25 @@ node_impl::~node_impl()
   leave_daylite();
   stop_gateway_service();
 }
+
+
+void_result node_impl::start(const std::string &known_host, const uint16_t known_port)
+{
+  gateway("", 0);
+  return join_daylite(known_host, known_port, false);
+}
+
+void_result node_impl::gateway(const std::string &host, const uint16_t port)
+{
+  return start_gateway_service(host, port);
+}
+
+void_result node_impl::stop()
+{
+  stop_gateway_service();
+  leave_daylite();
+  return success();
+} 
 
 void_result node_impl::start_gateway_service(const std::string &local_host, uint16_t local_port)
 {
@@ -124,15 +150,15 @@ void_result node_impl::stop_gateway_service()
   return success();
 }
 
-void_result node_impl::join_daylite(const std::string &gateway_host, uint16_t gateway_port)
+void_result node_impl::join_daylite(const std::string &host, uint16_t port, bool peer)
 {
-  socket_address gateway(gateway_host, gateway_port);
+  socket_address gateway(host, port);
   void_result ret;
 
   auto gateway_transport = make_unique<tcp_transport>(gateway);
   if(!(ret = gateway_transport->open())) return ret;
 
-  auto gateway_node = make_shared<remote_node>(this, move(gateway_transport));
+  auto gateway_node = make_shared<remote_node>(this, move(gateway_transport), peer ? remote_node::block_internal : remote_node::allow_internal);
   _dave->register_mailbox(gateway_node);
   _remotes.push_back(gateway_node);
   send_info();
@@ -192,8 +218,13 @@ void node_impl::unregister_publisher(publisher_impl *const publisher)
 struct node_info node_impl::info() const
 {
   node_info ret;
-  memcpy(&ret.id, _id.data, sizeof(ret.id));
+  ret.id = _id;
+  ret.name = _name;
   ret.hosts = network_interfaces::interfaces();
+  if(_server && _server->socket().port().some())
+  {
+    for(auto &host : ret.hosts) host.port = bson_bind::some(_server->socket().port().unwrap());
+  }
   ret.maxkeepalive = _keepalive;
   ret.keepalive = ret.maxkeepalive;
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
@@ -206,6 +237,7 @@ bool node_impl::touch_node(uint32_t id)
   auto it = _latest_info.find(id);
   if(it == _latest_info.end()) return false;
   it->second.keepalive = it->second.maxkeepalive;
+  std::cout << "new keepalive for " << id << " : " << it->second.keepalive.seconds + it->second.keepalive.microseconds / 1000000.0 << std::endl;
   return true;
 }
 
@@ -262,6 +294,11 @@ void node_impl::send_info()
   }
 }
 
+void node_impl::update_peer_link(const node_info &info)
+{
+  // First try loopback
+}
+
 void node_impl::update_time()
 {
   timeval now;
@@ -305,6 +342,12 @@ void node_impl::server_disconnection(tcp_socket *const socket)
   {
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket) { ++it; continue; }
     _dave->unregister_mailbox(*it);
+    for(uint32_t id : (*it)->associated_ids())
+    {
+      auto lit = _latest_info.find(id);
+      if(lit == _latest_info.end()) continue;
+      _latest_info.erase(lit);
+    }
     it = _remotes.erase(it);
   }
 }

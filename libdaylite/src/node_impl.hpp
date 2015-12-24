@@ -34,15 +34,15 @@ namespace daylite
   public:
     friend class subscriber_impl;
     friend class publisher_impl;
+    friend class remote_node;
 
     node_impl(const std::string &name, const option<socket_address> &us);
     ~node_impl();
 
-    void_result start_gateway_service(const std::string &local_host, uint16_t local_port);
-    void_result stop_gateway_service();
+    void_result start(const std::string &known_host, const uint16_t known_port);
+    void_result gateway(const std::string &host, const uint16_t port);
+    void_result stop();
 
-    void_result join_daylite(const std::string &gateway_host, uint16_t gateway_port);
-    void_result leave_daylite();
 
     const std::string &get_name() const { return _name; }
 
@@ -56,23 +56,29 @@ namespace daylite
 
     inline uint32_t id() const
     {
-      uint32_t ret;
-      memcpy(&ret, _id.data, sizeof(ret));
-      return ret;
+      return _id;
     }
 
-    bool touch_node(uint32_t id);
     void prune_nodes();
     inline const network_time &time() const { return _network_time; }
     void update_time();
 
   private:
+    void_result start_gateway_service(const std::string &local_host, uint16_t local_port);
+    void_result stop_gateway_service();
+
+    void_result join_daylite(const std::string &gateway_host, uint16_t gateway_port, bool peer);
+    void_result leave_daylite();
+
     void register_subscriber(subscriber_impl *const subscriber);
     void register_publisher(publisher_impl *const publisher);
     void unregister_subscriber(subscriber_impl *const subscriber);
     void unregister_publisher(publisher_impl *const publisher);
     struct node_info info() const;
+    bool touch_node(uint32_t id);
     void send_info();
+
+    void update_peer_link(const node_info &info);
 
     virtual void server_connection(tcp_socket *const socket);
     virtual void server_disconnection(tcp_socket *const socket);
@@ -89,7 +95,7 @@ namespace daylite
     std::vector<subscriber_impl *> _active_subscribers;
     std::vector<publisher_impl *> _active_publishers;
     
-    boost::uuids::uuid _id;
+    uint32_t _id;
     std::unordered_map<decltype(node_info::id), node_info> _latest_info;
     std::unordered_map<std::string, uint32_t> _subscription_count;
 

@@ -23,6 +23,7 @@ namespace daylite
     publisher_impl(node_impl *const parent, const daylite::topic &t, const std::shared_ptr<mailman> &dave);
     ~publisher_impl();
 
+    unsigned subscriber_count();
     void_result publish(const bson_t *msg);
     void_result publish(std::unique_ptr<packet> packet);
 

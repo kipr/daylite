@@ -46,15 +46,11 @@ packet::packet(const bson_t *packed_msg)
 
 packet::packet(const class topic &t, const network_time &stamp, const bson_t *raw_msg)
   : _msg(bson_copy(raw_msg))
-  , _packed(bson_new())
+  , _packed(nullptr)
 {
   _meta.topic = t.name();
   _meta.stamp = stamp;
-  auto m = _meta.bind();
-  BSON_APPEND_DOCUMENT(_packed, "meta", m);
-  bson_destroy(m);
-  if(raw_msg) BSON_APPEND_DOCUMENT(_packed, "msg", raw_msg);
-  else BSON_APPEND_UNDEFINED(_packed, "msg");
+  build();
 }
 
 packet::packet(const packet &rhs)
@@ -77,6 +73,17 @@ packet::~packet()
 {
   if(_msg) bson_destroy(_msg);
   if(_packed) bson_destroy(_packed);
+}
+
+void packet::build()
+{
+  if(_packed) bson_destroy(_packed);
+  _packed = bson_new();
+  auto m = _meta.bind();
+  BSON_APPEND_DOCUMENT(_packed, "meta", m);
+  bson_destroy(m);
+  if(_msg) BSON_APPEND_DOCUMENT(_packed, "msg", _msg);
+  else BSON_APPEND_UNDEFINED(_packed, "msg");
 }
 
 packet &packet::operator =(packet &&rhs)

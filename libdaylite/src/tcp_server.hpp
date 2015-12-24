@@ -20,7 +20,8 @@ namespace daylite
     
     void_result add_tcp_server_listener(tcp_server_listener *const listener);
     void_result remove_tcp_server_listener(tcp_server_listener *const listener);
-    
+
+    inline const tcp_socket &socket() const { return _socket; }
   private:
     virtual void_result spin_update();
     

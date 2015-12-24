@@ -20,6 +20,13 @@ publisher_impl::~publisher_impl()
   _dave->unregister_mailbox(_mailbox);
 }
 
+unsigned publisher_impl::subscriber_count()
+{
+  auto it = _parent->_subscription_count.find(_t.name());
+  if(it == _parent->_subscription_count.end()) return 0U;
+  return it->second;
+}
+
 void_result publisher_impl::publish(const bson_t *msg)
 {
   _parent->update_time();

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  auto ret = me->start_gateway_service("", 8374);
+  auto ret = me->gateway("", 8374);
   if(!me)
   {
     std::cerr << "Cannot start the gateway service" << std::endl;
