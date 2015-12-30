@@ -10,7 +10,6 @@ bool alive!
 uint32 id!
 
 network_interface[] hosts!
-uint16 port!
 
 # Subscriptions
 string[] in_topics!
