@@ -2,6 +2,8 @@
 
 string name!
 
+bool alive!
+
 # The node id is expected to remain
 # constant for the lifetime of the node.
 # This value must be unique on the network
