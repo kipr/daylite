@@ -353,6 +353,7 @@ void node_impl::server_disconnection(tcp_socket *const socket)
     }
     it = _remotes.erase(it);
   }
+  send_info();
 }
 
 void_result node_impl::spin_update()
