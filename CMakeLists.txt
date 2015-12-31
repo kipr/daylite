@@ -42,3 +42,10 @@ endif()
 
 add_subdirectory(libdaylite)
 add_subdirectory(daylited)
+
+
+
+option(tools "Build daylite tools" ON)
+if(tools)
+  add_subdirectory(tools)
+endif()

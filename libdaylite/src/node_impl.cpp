@@ -229,6 +229,7 @@ struct node_info node_impl::info() const
   ret.keepalive = ret.maxkeepalive;
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
   for(auto s : _active_publishers) ret.out_topics.push_back(s->topic().name());
+  ret.alive = true;
   return ret;
 }
 
@@ -346,10 +347,13 @@ void node_impl::server_disconnection(tcp_socket *const socket)
     {
       auto lit = _latest_info.find(id);
       if(lit == _latest_info.end()) continue;
-      _latest_info.erase(lit);
+      lit->second.alive = false;
+      lit->second.out_topics.clear();
+      lit->second.in_topics.clear();
     }
     it = _remotes.erase(it);
   }
+  send_info();
 }
 
 void_result node_impl::spin_update()

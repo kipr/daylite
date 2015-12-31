@@ -2,4 +2,6 @@
 string name!
 string address!
 string netmask!
+
+# Optional port
 uint16 port
