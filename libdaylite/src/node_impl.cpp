@@ -69,11 +69,11 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
 
       for(auto it = _latest_info.begin(); it != _latest_info.end(); ++it)
       {
-        cout << it->first << ":" << endl;
+        /*cout << it->first << ":" << endl;
         cout << "  pubs:" << endl;
         for(auto p : info.out_topics) cout << "    " << p << endl;
         cout << "  subs:" << endl;
-        for(auto p : info.in_topics) cout << "    " << p << endl;
+        for(auto p : info.in_topics) cout << "    " << p << endl;*/
       }
       return success();
     }))
@@ -237,7 +237,7 @@ bool node_impl::touch_node(uint32_t id)
   auto it = _latest_info.find(id);
   if(it == _latest_info.end()) return false;
   it->second.keepalive = it->second.maxkeepalive;
-  std::cout << "new keepalive for " << id << " : " << it->second.keepalive.seconds + it->second.keepalive.microseconds / 1000000.0 << std::endl;
+  //std::cout << "new keepalive for " << id << " : " << it->second.keepalive.seconds + it->second.keepalive.microseconds / 1000000.0 << std::endl;
   return true;
 }
 
@@ -249,7 +249,7 @@ void node_impl::prune_nodes()
   timeval diff;
   timersub(&now, &_last_prune, &diff);
 
-  std::cout << "time since last prune: " << diff.tv_sec << std::endl;
+  // std::cout << "time since last prune: " << diff.tv_sec << std::endl;
   for(auto it = _latest_info.begin(); it != _latest_info.end();)
   {
     auto &ka = it->second.keepalive;
@@ -260,7 +260,7 @@ void node_impl::prune_nodes()
     if(timercmp(&diff, &k, >))
     {
       // Prune
-      std::cout << "Pruning " << it->first << std::endl;
+      // std::cout << "Pruning " << it->first << std::endl;
       it = _latest_info.erase(it);
       continue;
     }
@@ -269,7 +269,7 @@ void node_impl::prune_nodes()
     timersub(&k, &diff, &ans);
     ka.seconds = ans.tv_sec;
     ka.microseconds = ans.tv_usec;
-    std::cout << "Node " << it->first << " now has " << ka.seconds << " remaining" << std::endl;
+    // std::cout << "Node " << it->first << " now has " << ka.seconds << " remaining" << std::endl;
 
     ++it;
   }
