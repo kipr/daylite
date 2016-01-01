@@ -2,6 +2,7 @@
 #include "daylite/option.hpp"
 
 #include <cstring>
+#include <iostream>
 
 #ifdef WIN32
 #define _WIN32_WINNT 0x0501
@@ -24,6 +25,7 @@ typedef LONG_PTR ssize_t;
 #include "console.hpp"
 
 using namespace daylite;
+using namespace std;
 
 namespace
 {
