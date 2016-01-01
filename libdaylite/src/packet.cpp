@@ -6,9 +6,8 @@
 using namespace daylite;
 using namespace std;
 
-packet::packet(const bson_t *packed_msg)
-  : _msg(nullptr)
-  , _packed(bson_copy(packed_msg))
+packet::packet(const bson &packed_msg)
+  : _packed(packed_msg)
 {
   bson_iter_t it;
   if(!bson_iter_init(&it, packed_msg))
@@ -26,9 +25,8 @@ packet::packet(const bson_t *packed_msg)
   const bson_value_t *val = bson_iter_value(&it);
   if(val->value_type == BSON_TYPE_DOCUMENT)
   {
-    bson_t *m = bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len);
+    bson m(bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len));
     _meta = meta::unbind(m);
-    bson_destroy(m);
   }
   else DAYLITE_ERROR_STREAM("'meta' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
 
@@ -40,13 +38,13 @@ packet::packet(const bson_t *packed_msg)
   }
   
   val = bson_iter_value(&it);
-  if(val->value_type == BSON_TYPE_DOCUMENT) _msg = bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len);
+  if(val->value_type == BSON_TYPE_DOCUMENT) _msg = bson(bson_new_from_data(val->value.v_doc.data, val->value.v_doc.data_len));
   else DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
 }
 
-packet::packet(const class topic &t, const network_time &stamp, const bson_t *raw_msg)
-  : _msg(bson_copy(raw_msg))
-  , _packed(nullptr)
+packet::packet(const class topic &t, const network_time &stamp, const bson &raw_msg)
+  : _msg(raw_msg)
+  , _packed()
 {
   _meta.topic = t.name();
   _meta.stamp = stamp;
@@ -55,8 +53,8 @@ packet::packet(const class topic &t, const network_time &stamp, const bson_t *ra
 
 packet::packet(const packet &rhs)
   : _meta(rhs._meta)
-  , _msg(rhs._msg ? bson_copy(rhs._msg) : nullptr)
-  , _packed(rhs._packed ? bson_copy(rhs._packed) : nullptr)
+  , _msg(rhs._msg)
+  , _packed(rhs._packed)
 {
 }
 
@@ -65,49 +63,39 @@ packet::packet(packet &&rhs)
   , _msg(rhs._msg)
   , _packed(rhs._packed)
 {
-  rhs._msg = nullptr;
-  rhs._packed = nullptr;
+  rhs._msg = bson();
+  rhs._packed = bson();
 }
 
 packet::~packet()
 {
-  if(_msg) bson_destroy(_msg);
-  if(_packed) bson_destroy(_packed);
 }
 
 void packet::build()
 {
-  if(_packed) bson_destroy(_packed);
-  _packed = bson_new();
-  auto m = _meta.bind();
-  BSON_APPEND_DOCUMENT(_packed, "meta", m);
-  bson_destroy(m);
-  if(_msg) BSON_APPEND_DOCUMENT(_packed, "msg", _msg);
-  else BSON_APPEND_UNDEFINED(_packed, "msg");
+  auto p = bson_new();
+  
+  auto m = bson(_meta.bind());
+  BSON_APPEND_DOCUMENT(p, "meta", m);
+  if(_msg) BSON_APPEND_DOCUMENT(p, "msg", _msg);
+  else BSON_APPEND_UNDEFINED(p, "msg");
+  
+  _packed = bson(p);
 }
 
 packet &packet::operator =(packet &&rhs)
 {
-  if(_msg) bson_destroy(_msg);
-  if(_packed) bson_destroy(_packed);
-
   _meta = move(rhs._meta);
-  _msg = rhs._msg;
-  _packed = rhs._packed;
-
-  rhs._msg = nullptr;
-  rhs._packed = nullptr;
-
+  _msg = move(rhs._msg);
+  _packed = move(rhs._packed);
   return *this;
 }
 
 packet &packet::operator =(const packet &rhs)
 {
-  if(_msg) bson_destroy(_msg);
-  if(_packed) bson_destroy(_packed);
   _meta = rhs._meta;
-  _msg = rhs._msg ? bson_copy(rhs._msg) : nullptr;
-  _packed = rhs._packed ? bson_copy(rhs._packed) : nullptr;
+  _msg = rhs._msg;
+  _packed = rhs._packed;
 
   return *this;
 }

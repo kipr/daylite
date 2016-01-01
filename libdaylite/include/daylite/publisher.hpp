@@ -3,17 +3,16 @@
 
 #include <cstdint>
 
-#include <bson.h>
-
 #include "daylite/compat.hpp"
 #include "daylite/result.hpp"
+#include "daylite/bson.hpp"
 
 namespace daylite
 {
   struct DLL_EXPORT publisher
   {
     virtual unsigned subscriber_count() = 0;
-    virtual void_result publish(const bson_t *msg) = 0;
+    virtual void_result publish(const bson &msg) = 0;
   };
 }
 

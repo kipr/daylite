@@ -12,7 +12,7 @@ using namespace std;
 
 remote_node::remote_node(node_impl *const parent, unique_ptr<transport> link, const enum mode mode)
   : _parent(parent)
-  , mailbox(topic::any, [this](shared_ptr<packet> p) { return send(*p.get()); })
+  , mailbox(topic::any, [this](const packet &p) { return send(p); })
   , _link(move(link))
   , _mode(mode)
 {
@@ -69,7 +69,7 @@ void_result remote_node::spin_update()
       std::cout << "Warning: Unable to update keepalive for node " << p_val.meta().id << std::endl;
     }
 
-    place_outgoing_mail(make_unique<packet>(p_val));
+    place_outgoing_mail(p_val);
   }
 
   return success();

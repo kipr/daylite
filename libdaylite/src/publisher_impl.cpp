@@ -27,13 +27,13 @@ unsigned publisher_impl::subscriber_count()
   return it->second;
 }
 
-void_result publisher_impl::publish(const bson_t *msg)
+void_result publisher_impl::publish(const bson &msg)
 {
   _parent->update_time();
-  return publish(make_unique<packet>(_mailbox->topic(), _parent->time(), msg));
+  return publish(packet(_mailbox->topic(), _parent->time(), msg));
 }
 
-void_result publisher_impl::publish(unique_ptr<packet> packet)
+void_result publisher_impl::publish(const packet &p)
 {
-  return _mailbox->place_outgoing_mail(move(packet));
+  return _mailbox->place_outgoing_mail(p);
 }

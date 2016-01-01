@@ -35,18 +35,17 @@ static inline bool operator >(const network_time &l, const network_time &r)
 node_impl::node_impl(const string &name, const option<socket_address> &us)
   : _name(name)
   , _dave(make_shared<mailman>(mailman()))
-  , _mailbox(new mailbox(topic::internal, [this] (std::shared_ptr<packet> p) {
+  , _mailbox(new mailbox(topic::internal, [this] (const packet &p) {
       node_info info;
-      print_bson(p->packed());
       update_time();
-      if(p->stamp() > _network_time)
+      if(p.stamp() > _network_time)
       {
-        _network_time = p->stamp();
+        _network_time = p.stamp();
       }
 
       try
       {
-        info = node_info::unbind(p->msg());
+        info = node_info::unbind(p.msg());
       }
       catch(const std::invalid_argument &e)
       {
@@ -280,18 +279,14 @@ void node_impl::prune_nodes()
 
 void node_impl::send_info() 
 {
-  auto i = info().bind();
   update_time();
-  packet p(topic::internal, _network_time, i);
-  bson_destroy(i);
-  _mailbox->place_outgoing_mail(make_unique<packet>(p));
+  packet p(topic::internal, _network_time, info().bind());
+  _mailbox->place_outgoing_mail(p);
   prune_nodes();
   for(auto peer : _latest_info)
   {
-    auto i = peer.second.bind();
-    packet p(topic::internal, _network_time, i);
-    bson_destroy(i);
-    _mailbox->place_outgoing_mail(make_unique<packet>(p));
+    packet p(topic::internal, _network_time, peer.second.bind());
+    _mailbox->place_outgoing_mail(p);
   }
 }
 

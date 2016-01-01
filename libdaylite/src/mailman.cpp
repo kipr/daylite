@@ -8,9 +8,9 @@ using namespace std;
 
 void_result mailman::register_mailbox(const shared_ptr<mailbox> &mailbox)
 {
-  mailbox->set_outgoing_mail_callback([this, mailbox](unique_ptr<packet> p)
+  mailbox->set_outgoing_mail_callback([this, mailbox](const packet &p)
   {
-    return send(mailbox->id(), move(p));
+    return send(mailbox->id(), p);
   });
   
   _mailboxes[mailbox->topic()][mailbox->id()] = mailbox;
@@ -28,18 +28,16 @@ void_result mailman::unregister_mailbox(const shared_ptr<mailbox> &mailbox)
   return success();
 }
 
-void_result mailman::send(const uint32_t sender_id, unique_ptr<packet> p)
+void_result mailman::send(const uint32_t sender_id, const packet &p)
 {
-  shared_ptr<packet> pack = make_shared<packet>(*p.release());
-
   // send packet to all registered mailboxes for this topic besides the sender one
-  auto it = _mailboxes.find(pack->topic());
+  auto it = _mailboxes.find(p.topic());
   if(it != _mailboxes.end())
   {
     for(const auto &mailbox : it->second)
     {
       if(mailbox.first == sender_id) continue;
-      assert_result(mailbox.second->place_incoming_mail(pack));
+      assert_result(mailbox.second->place_incoming_mail(p));
     }
   }
 
@@ -50,7 +48,7 @@ void_result mailman::send(const uint32_t sender_id, unique_ptr<packet> p)
     for(const auto &mailbox : it->second)
     {
       if(mailbox.first == sender_id) continue;
-      assert_result(mailbox.second->place_incoming_mail(pack));
+      assert_result(mailbox.second->place_incoming_mail(p));
     }
   }
 

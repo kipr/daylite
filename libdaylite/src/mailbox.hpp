@@ -14,8 +14,8 @@ namespace daylite
   class mailbox
   {
   public:
-    typedef std::function<void_result (std::shared_ptr<packet>)> incoming_mail_callback_t;
-    typedef std::function<void_result (std::unique_ptr<packet>)> outgoing_mail_callback_t;
+    typedef std::function<void_result (const packet &)> incoming_mail_callback_t;
+    typedef std::function<void_result (const packet &)> outgoing_mail_callback_t;
 
     mailbox(const topic &topic
       , const incoming_mail_callback_t &incoming_mail_callback = incoming_mail_callback_t()
@@ -27,8 +27,8 @@ namespace daylite
     const class topic &topic() const { return _topic; }
     size_t id() const;
 
-    void_result place_incoming_mail(const std::shared_ptr<packet> &packet);
-    void_result place_outgoing_mail(std::unique_ptr<packet> packet);
+    void_result place_incoming_mail(const packet &p);
+    void_result place_outgoing_mail(const packet &p);
 
   private:
     class topic _topic;

@@ -3,18 +3,17 @@
 
 #include <cstdint>
 
-#include <bson.h>
-
 #include <functional>
 
 #include "daylite/compat.hpp"
+#include "daylite/bson.hpp"
 
 namespace daylite
 {
   class DLL_EXPORT subscriber
   {
   public:
-    typedef std::function<void (const bson_t *, void *)> subscriber_callback_t;
+    typedef std::function<void (const bson &, void *)> subscriber_callback_t;
   };
 }
 

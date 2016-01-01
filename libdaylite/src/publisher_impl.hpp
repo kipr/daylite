@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include <bson.h>
+#include "daylite/bson.hpp"
 
 #include "daylite/publisher.hpp"
 
@@ -24,8 +24,8 @@ namespace daylite
     ~publisher_impl();
 
     unsigned subscriber_count();
-    void_result publish(const bson_t *msg);
-    void_result publish(std::unique_ptr<packet> packet);
+    void_result publish(const bson &msg);
+    void_result publish(const packet &p);
 
     inline class daylite::topic topic() const { return _t; }
 

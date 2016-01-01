@@ -30,16 +30,15 @@ size_t mailbox::id() const
   return (size_t) this;
 }
 
-void_result mailbox::place_incoming_mail(const shared_ptr<packet> &packet)
+void_result mailbox::place_incoming_mail(const packet &p)
 {
-  if(_incoming_mail_callback) return _incoming_mail_callback(packet);
+  if(_incoming_mail_callback) return _incoming_mail_callback(p);
   
   return success();
 }
 
-void_result mailbox::place_outgoing_mail(unique_ptr<packet> packet)
+void_result mailbox::place_outgoing_mail(const packet &p)
 {
-  if(_outgoing_mail_callback) return _outgoing_mail_callback(move(packet));
-  
+  if(_outgoing_mail_callback) return _outgoing_mail_callback(p);
   return success();
 }

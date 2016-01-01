@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     return 1;
   }
   
-  auto sub = me->subscribe("/test", [](const bson_t *msg, void *)
+  auto sub = me->subscribe("/test", [](const bson &msg, void *)
     {
     print_bson(msg);
     });
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     string_msg msg;
-    msg.value = "test";   
-    pub->publish(msg.bind());
+    msg.value = "test";
+    pub->publish(bson(msg.bind()));
     spinner::spin_once();
     cout << "." << endl;
   }

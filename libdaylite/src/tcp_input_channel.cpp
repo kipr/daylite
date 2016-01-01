@@ -48,10 +48,7 @@ result<packet> tcp_input_channel::read()
   if(_buffer.size() < target_size) return failure<packet>("Ran out of time", EAGAIN);
 
   // Got all of the packet. Chop it off of the buffer and return it.
-  bson_reader_t *reader;
-  const bson_t *doc;
-
-  reader = bson_reader_new_from_data(_buffer.data(), target_size);
+  bson_reader_t *reader = bson_reader_new_from_data(_buffer.data(), target_size);
   if(!reader)
   {
     bson_reader_destroy(reader);
@@ -59,10 +56,7 @@ result<packet> tcp_input_channel::read()
     return failure<packet>("Could not create the BSON reader");
   }
 
-  doc = bson_reader_read(reader, nullptr);
-
-  packet p(doc);
-
+  packet p(bson(bson_reader_read(reader, nullptr)));
   _buffer.erase(_buffer.begin(), _buffer.begin() + target_size);
   bson_reader_destroy(reader);
 

@@ -17,7 +17,7 @@ vector<network_interface> network_interfaces::interfaces()
 {
   vector<network_interface> interfaces;
 
-  ifaddrs *addr;
+  ifaddrs *addr = 0;
   getifaddrs(&addr);
   ifaddrs *head = addr;
 

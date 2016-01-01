@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#include <bson.h>
+#include <daylite/bson.hpp>
 
 #include "topic.hpp"
 #include "meta.hpp"
@@ -13,15 +13,15 @@ namespace daylite
   class packet
   {
   public:
-    packet(const bson_t *packed_msg = nullptr);
-    packet(const class topic &t, const network_time &stamp, const bson_t *raw_msg = nullptr);
+    packet(const bson &packed_msg = bson());
+    packet(const class topic &t, const network_time &stamp, const bson &raw_msg = bson());
 
     packet(const packet &rhs);
     packet(packet &&rhs);
     ~packet();
     
-    inline const bson_t *msg() const { return _msg; }
-    inline const bson_t *packed() const { return _packed; }
+    inline const bson msg() const { return _msg; }
+    inline const bson packed() const { return _packed; }
     inline struct meta &meta() { return _meta; }
     inline const struct meta &meta() const { return _meta; }
     inline class topic topic() const { return daylite::topic(_meta.topic); }
@@ -34,8 +34,8 @@ namespace daylite
     
   private:
     struct meta _meta;
-    bson_t *_msg;
-    bson_t *_packed;
+    bson _msg;
+    bson _packed;
   };
 }
 

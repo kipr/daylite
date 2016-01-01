@@ -13,9 +13,9 @@ subscriber_impl::subscriber_impl(node_impl *const parent, const daylite::topic &
 {
   _parent->register_subscriber(this);
   _dave->register_mailbox(_mailbox);
-  _mailbox->set_incoming_mail_callback([callback, usr_arg](const shared_ptr<packet> &packet)
+  _mailbox->set_incoming_mail_callback([callback, usr_arg](const packet &p)
   {
-    if(callback) callback(packet->msg(), usr_arg);
+    if(callback) callback(p.msg(), usr_arg);
     return success();
   });
 }
