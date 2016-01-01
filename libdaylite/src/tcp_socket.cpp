@@ -68,7 +68,13 @@ namespace
  
     cout << __LINE__ << endl;
  
-    if(ret.sin_addr.s_addr != INADDR_NONE) return some(ret);
+    if(ret.sin_addr.s_addr != INADDR_NONE)
+    {
+      cout << __LINE__ << endl;
+      auto r = some(ret);
+      cout << __LINE__ << endl;
+      return r;
+    }
     cout << __LINE__ << endl;
 #ifdef WIN32
     struct addrinfo *result = NULL;
@@ -166,35 +172,48 @@ void tcp_socket::close()
 void_result tcp_socket::bind(const socket_address &address)
 {
   if(!is_open()) return failure("tcp_socket not open");
-  
+  cout << __LINE__ << endl;
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
+  cout << __LINE__ << endl;
   if(!addr.some()) return get_std_error();
-
+  cout << __LINE__ << endl;
   void_result ret;
+  cout << __LINE__ << endl;
 #ifndef WIN32
   int enable = 1;
+  cout << __LINE__ << endl;
   ret = get_std_error(::setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)));
+  cout << __LINE__ << endl;
   if(!ret) return ret;
 #endif
-  
+  cout << __LINE__ << endl;
   ret = get_std_error(::bind(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in)));
+  cout << __LINE__ << endl;
   if(ret) _associated_address = some(address);
+  cout << __LINE__ << endl;
   return ret;
 }
 
 void_result tcp_socket::connect(const socket_address &address)
 {
   if(!is_open()) return failure("tcp_socket not open");
-  
+  cout << __LINE__ << endl;
   option<sockaddr_in> addr = socket_address_to_sockaddr(address);
+  cout << __LINE__ << endl;
   if(!addr.some()) return get_std_error();
+  cout << __LINE__ << endl;
   
   const bool blocking_mode = blocking();
+  cout << __LINE__ << endl;
   
   set_blocking(true);
+  cout << __LINE__ << endl;
   const int res = ::connect(_fd, reinterpret_cast<const sockaddr *>(&addr.unwrap()), sizeof(sockaddr_in));
+  cout << __LINE__ << endl;
   void_result ret = get_std_error(res);
+  cout << __LINE__ << endl;
   set_blocking(blocking_mode);
+  cout << __LINE__ << endl;
   if(ret)
   {
     _associated_address = some(address);
