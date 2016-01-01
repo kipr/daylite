@@ -53,13 +53,21 @@ namespace
     sockaddr_in ret;
     memset(&ret, 0, sizeof(sockaddr_in));
     
+    cout << __LINE__ << endl;
+    
     ret.sin_family = AF_INET;
+    cout << __LINE__ << endl;
+    
     ret.sin_port = htons(address.port());
+    
+    cout << __LINE__ << endl;
     
     ret.sin_addr.s_addr = address.host().empty() ? INADDR_ANY : inet_addr(address.host().c_str());
  
+    cout << __LINE__ << endl;
+ 
     if(ret.sin_addr.s_addr != INADDR_NONE) return some(ret);
-    
+    cout << __LINE__ << endl;
 #ifdef WIN32
     struct addrinfo *result = NULL;
     auto ret_val = getaddrinfo(address.host().c_str(), NULL, NULL, &result);
@@ -77,12 +85,14 @@ namespace
     memcpy(&ret.sin_addr, result->ai_addr, sizeof(ret.sin_addr));
     freeaddrinfo(result);
 #else
+    cout << __LINE__ << endl;
     hostent *host = gethostbyname(address.host().c_str());
+    cout << __LINE__ << endl;
     if(!host) return none<sockaddr_in>();
-  
+    cout << __LINE__ << endl;
     memcpy(&ret.sin_addr, host->h_addr, sizeof(ret.sin_addr));
 #endif
-    
+    cout << __LINE__ << endl;
     return some(ret);
   }
   

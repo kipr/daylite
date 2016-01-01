@@ -77,7 +77,7 @@ void packet::build()
   
   auto m = bson(_meta.bind());
   BSON_APPEND_DOCUMENT(p, "meta", m);
-  if(_msg) BSON_APPEND_DOCUMENT(p, "msg", _msg);
+  if(_msg) BSON_APPEND_DOCUMENT(p, "msg", _msg);  
   else BSON_APPEND_UNDEFINED(p, "msg");
   
   _packed = bson(p);
