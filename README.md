@@ -41,6 +41,7 @@ Requirements
 * CMake 2.8.0 or higher
 * libbson
 * boost
+* [bsonbind](https://github.com/kipr/bsonbind)
 
 Building (OS X and Linux)
 =========================
