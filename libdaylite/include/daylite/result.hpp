@@ -115,7 +115,7 @@ namespace daylite
     bool _success;
     std::string _message;
     uint32_t _code;
-    uint8_t _ret[sizeof(T)];
+    __declspec(align(4)) uint8_t _ret[sizeof(T)];
   };
   
   typedef result<bool> void_result;
