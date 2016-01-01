@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <signal.h>
 
 using namespace daylite;
 using namespace std;
