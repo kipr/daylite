@@ -22,3 +22,5 @@ if(WIN32)
         ${LIBBSON_DLL}
         $<TARGET_FILE_DIR:daylited>)
 endif()
+
+install(TARGETS daylited RUNTIME DESTINATION bin)
