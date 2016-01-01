@@ -15,8 +15,9 @@ using namespace std;
 
 vector<network_interface> network_interfaces::interfaces()
 {
-  vector<network_interface> interfaces;
 
+  vector<network_interface> interfaces;
+  /*
   ifaddrs *addr = 0;
   getifaddrs(&addr);
   ifaddrs *head = addr;
@@ -24,7 +25,7 @@ vector<network_interface> network_interfaces::interfaces()
   while(addr)
   {
     network_interface i;
-    i.name = addr->ifa_name;
+    i.name = addr->ifa_name ? addr->ifa_name : "";
     auto broadcast = addr->ifa_broadaddr; 
     auto netmask = addr->ifa_netmask; 
     if(!broadcast || !netmask)
@@ -41,6 +42,6 @@ vector<network_interface> network_interfaces::interfaces()
   }
 
   if(head) freeifaddrs(head);
-
+*/
   return interfaces;
 }
