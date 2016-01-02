@@ -1,3 +1,5 @@
+find_path(BSON_BIND_INCLUDE_DIR bson_bind/option.hpp)
+
 find_program(BSON_BIND_EXECUTABLE bson_bind)
 
 function(add_bson_bind INCLUDES PATH_)
@@ -16,5 +18,5 @@ macro(add_bson_binds INCLUDES)
 endmacro()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(BSON_BIND DEFAULT_MSG BSON_BIND_EXECUTABLE)
-mark_as_advanced(BSON_BIND_EXECUTABLE)
+find_package_handle_standard_args(BSON_BIND DEFAULT_MSG BSON_BIND_INCLUDE_DIR BSON_BIND_EXECUTABLE)
+mark_as_advanced(BSON_BIND_INCLUDE_DIR BSON_BIND_EXECUTABLE)

@@ -6,7 +6,13 @@
 #include "mailman.hpp"
 #include "network_interfaces.hpp"
 #include <boost/uuid/random_generator.hpp>
+#ifdef WIN32
+extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
+extern "C" void timersub(struct timeval *a, struct timeval *b, struct timeval *res);
+extern "C" void timeradd(struct timeval *a, struct timeval *b, struct timeval *res);
+#else
 #include <sys/time.h>
+#endif
 
 #include <iostream>
 

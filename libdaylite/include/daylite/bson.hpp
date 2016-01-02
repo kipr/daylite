@@ -4,9 +4,11 @@
 #include <memory>
 #include <bson.h>
 
+#include "daylite/compat.hpp"
+
 namespace daylite
 {
-  class bson
+  class DLL_EXPORT bson
   {
   public:
     bson(bson_t *const raw, bool owns = true);

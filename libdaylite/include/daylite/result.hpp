@@ -6,6 +6,8 @@
 #include <string>
 #include <cstring>
 
+#include "daylite/compat.hpp"
+
 namespace daylite
 {
   template<typename T>
@@ -115,7 +117,7 @@ namespace daylite
     bool _success;
     std::string _message;
     uint32_t _code;
-    uint8_t _ret[sizeof(T)] __attribute__ ((aligned (8)));
+    ALIGNED(uint8_t _ret[sizeof(T)], 8);
   };
   
   typedef result<bool> void_result;
