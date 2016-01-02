@@ -25,7 +25,10 @@ namespace daylite
 
     unsigned subscriber_count();
     void_result publish(const bson &msg);
-    void_result publish(const packet &p);
+    void_result publish(packet p);
+    
+    bool firehose() const { return _firehose; }
+    void set_firehose(const bool firehose) { _firehose = firehose; }
 
     inline class daylite::topic topic() const { return _t; }
 
@@ -34,6 +37,7 @@ namespace daylite
     daylite::topic _t;
     std::shared_ptr<mailman> _dave;
     std::shared_ptr<mailbox> _mailbox;
+    bool _firehose;
   };
 }
 

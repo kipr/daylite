@@ -49,19 +49,6 @@ namespace daylite
       new (_ret) T(rhs.unwrap());
     }
     
-    result(result<T> &&rhs)
-      : _success(rhs._success)
-      , _message(std::move(rhs._message))
-      , _code(rhs._code)
-    {
-      if(!_success) return;
-      
-      memcpy(_ret, rhs._ret, sizeof(T));
-      
-      // Ensure we won't call _ret's destructor in rhs
-      rhs._success = false;
-    }
-    
     ~result()
     {
       if(!_success) return;
@@ -92,21 +79,6 @@ namespace daylite
       _code = rhs._code;
       
       if(_success) new (_ret) T(rhs.unwrap());
-      
-      return *this;
-    }
-    
-    result<T> &operator =(result<T> &&rhs)
-    {
-      if(_success) reinterpret_cast<T *>(_ret)->~T();
-      
-      _success = rhs._success;
-      _message = std::move(rhs._message);
-      _code = rhs._code;
-      
-      if(_success) memcpy(_ret, rhs._ret, sizeof(T));
-      
-      rhs._success = false;
       
       return *this;
     }

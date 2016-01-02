@@ -12,6 +12,8 @@ namespace daylite
   struct DLL_EXPORT publisher
   {
     virtual unsigned subscriber_count() = 0;
+    virtual bool firehose() const = 0;
+    virtual void set_firehose(const bool firehose) = 0;
     virtual void_result publish(const bson &msg) = 0;
   };
 }

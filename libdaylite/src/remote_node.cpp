@@ -16,10 +16,12 @@ remote_node::remote_node(node_impl *const parent, unique_ptr<transport> link, co
   , _link(move(link))
   , _mode(mode)
 {
+  _parent->_thread.add_socket(_link.get());
 }
 
 remote_node::~remote_node()
 {
+  _parent->_thread.remove_socket(_link.get());
 }
 
 void_result remote_node::send(const packet &p)
@@ -41,35 +43,30 @@ void_result remote_node::send(const packet &p)
 
 void_result remote_node::spin_update()
 {
-  for(;;)
+  for(uint16_t i = 0; i < 1000U; ++i)
   {
-    auto in = _link->input();
-    // other side is gone...
-    if(in.none()) break;
+    auto p = _parent->_thread.next(_link.get());
+    if(p.null()) continue;
 
-    auto p = in.unwrap()->read();
-    if(!p) break;
-
-    auto p_val = p.unwrap();
     // If we have already received this message,
     // ignore it.
-    auto path = p_val.meta().path;
-    bool found = p_val.meta().id == _parent->id();
+    auto path = p.meta().path;
+    bool found = p.meta().id == _parent->id();
     for(auto id : path)
     {
       found |= id == _parent->id();
     }
     if(found) continue;
 
-    _associated_ids.insert(p_val.meta().id);
+    _associated_ids.insert(p.meta().id);
 
     // Reset the keep alive for this node
-    if(!_parent->touch_node(p_val.meta().id))
+    if(!_parent->touch_node(p.meta().id))
     {
-      std::cout << "Warning: Unable to update keepalive for node " << p_val.meta().id << std::endl;
+      std::cout << "Warning: Unable to update keepalive for node " << p.meta().id << std::endl;
     }
 
-    place_outgoing_mail(p_val);
+    place_outgoing_mail(p);
   }
 
   return success();

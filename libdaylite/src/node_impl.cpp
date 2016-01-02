@@ -92,6 +92,7 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
 
 node_impl::~node_impl()
 {
+  _thread.exit();
   _dave->unregister_mailbox(_mailbox);
   leave_daylite();
   stop_gateway_service();
@@ -170,6 +171,16 @@ void_result node_impl::leave_daylite()
   _remotes.clear();
 
   return success();
+}
+
+result<bson> node_impl::call(const std::string &t, const bson &value)
+{
+  return failure<bson>("NYI");
+}
+
+shared_ptr<service> node_impl::advertise_service(const std::string &t, service::service_callback_t cb)
+{
+  return shared_ptr<service>(new service_impl(this, topic(t), cb));
 }
 
 shared_ptr<publisher> node_impl::advertise(const std::string &t)
