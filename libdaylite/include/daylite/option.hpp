@@ -71,7 +71,7 @@ namespace daylite
     
   private:
     bool _some;
-    uint8_t _t[sizeof(T)];
+    ALIGNED(uint8_t _t[sizeof(T)], 8);
   };
   
   template<typename T>
