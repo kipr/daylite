@@ -13,7 +13,7 @@ if(APPLE)
 endif()
 
 if(NOT WIN32)
-  option(debug "Build in debug mode" ON)
+  option(debug "Build in debug mode" OFF)
   if(debug)
     add_definitions(-g -pg)
   else()
