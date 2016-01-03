@@ -60,7 +60,7 @@ result<packet> tcp_input_channel::read()
   else
   {
     t = new uint8_t[target_size];
-    _buffer.read(tmp, target_size);
+    _buffer.read(t, target_size);
     reader = bson_reader_new_from_data(tmp, target_size);
   }
   
