@@ -68,7 +68,6 @@ int main(int argc, char *argv[])
 
   while(!interrupt)
   {
-    this_thread::sleep_for(chrono::milliseconds(100));
     spinner::spin_once();
   }
 
