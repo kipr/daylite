@@ -13,8 +13,9 @@ namespace daylite
   class packet
   {
   public:
-    packet(const bson &packed_msg = bson());
-    packet(const class topic &t, const network_time &stamp, const bson &raw_msg = bson());
+    packet();
+    packet(const bson &packed_msg);
+    packet(const class topic &t, const network_time &stamp, const bson &raw_msg = bson(), bool autobuild = true);
 
     packet(const packet &rhs);
     packet(packet &&rhs);
@@ -27,12 +28,15 @@ namespace daylite
     inline class topic topic() const { return daylite::topic(_meta.topic); }
     inline const struct network_time &stamp() const { return _meta.stamp; }
 
+    inline bool null() const { return _null; }
+
     void build();
     
     packet &operator =(packet &&rhs);
     packet &operator =(const packet &rhs);
     
   private:
+    bool _null;
     struct meta _meta;
     bson _msg;
     bson _packed;

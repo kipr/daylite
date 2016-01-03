@@ -2,8 +2,7 @@
 #define _DAYLITE_TCP_INPUT_CHANNEL_HPP_
 
 #include "input_channel.hpp"
-
-#include <vector>
+#include "dynamic_circular_buffer.hpp"
 
 namespace daylite
 {
@@ -20,7 +19,7 @@ namespace daylite
     
   private:
     tcp_socket *_socket;
-    std::vector<uint8_t> _buffer;
+    dynamic_circular_buffer _buffer;
   };
 }
 

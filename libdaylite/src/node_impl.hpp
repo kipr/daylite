@@ -14,6 +14,7 @@
 #include "topic.hpp"
 #include "packet.hpp"
 #include "publisher_impl.hpp"
+#include "service_impl.hpp"
 #include "spinner_impl.hpp"
 #include "subscriber_impl.hpp"
 #include "tcp_server_listener.hpp"
@@ -21,6 +22,7 @@
 #include "daylite/option.hpp"
 #include "socket_address.hpp"
 #include "node_info.hpp"
+#include "tcp_thread.hpp"
 
 namespace daylite
 {
@@ -46,9 +48,12 @@ namespace daylite
 
     const std::string &get_name() const { return _name; }
 
+    result<bson> call(const std::string &topic, const bson &value);
+    std::shared_ptr<service> advertise_service(const std::string &topic, service::service_callback_t callback);
     std::shared_ptr<publisher> advertise(const std::string &topic);
     std::shared_ptr<subscriber> subscribe(const std::string &topic, subscriber::subscriber_callback_t callback, void *usr_arg);
 
+    result<std::shared_ptr<subscriber>> advertise_service(const topic &topic, service::service_callback_t cb);
     result<std::shared_ptr<publisher>> advertise(const topic &topic);
     result<std::shared_ptr<subscriber>> subscribe(const topic &topic, subscriber::subscriber_callback_t cb);
 
@@ -59,7 +64,6 @@ namespace daylite
       return _id;
     }
 
-    void prune_nodes();
     inline const network_time &time() const { return _network_time; }
     void update_time();
 
@@ -76,7 +80,7 @@ namespace daylite
     void unregister_publisher(publisher_impl *const publisher);
     struct node_info info() const;
     bool touch_node(uint32_t id);
-    void send_info();
+    void send_info(const bool include_dead);
 
     void update_peer_link(const node_info &info);
 
@@ -104,6 +108,8 @@ namespace daylite
     timeval _last_prune;
 
     network_time _keepalive;
+    
+    tcp_thread _thread;
   };
 }
 

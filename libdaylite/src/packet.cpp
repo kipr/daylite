@@ -6,8 +6,14 @@
 using namespace daylite;
 using namespace std;
 
+packet::packet()
+  : _null(true)
+{
+}
+
 packet::packet(const bson &packed_msg)
-  : _packed(packed_msg)
+  : _null(false)
+  , _packed(packed_msg)
 {
   bson_iter_t it;
   if(!bson_iter_init(&it, packed_msg))
@@ -42,24 +48,28 @@ packet::packet(const bson &packed_msg)
   else DAYLITE_ERROR_STREAM("'topic' has value-type " << val->value_type << ", " << BSON_TYPE_DOCUMENT << " expected");
 }
 
-packet::packet(const class topic &t, const network_time &stamp, const bson &raw_msg)
-  : _msg(raw_msg)
+packet::packet(const class topic &t, const network_time &stamp, const bson &raw_msg, bool autobuild)
+  : _null(false)
+  , _msg(raw_msg)
   , _packed()
 {
   _meta.topic = t.name();
   _meta.stamp = stamp;
-  build();
+  _meta.droppable = false;
+  if(autobuild) build();
 }
 
 packet::packet(const packet &rhs)
-  : _meta(rhs._meta)
+  : _null(rhs._null)
+  , _meta(rhs._meta)
   , _msg(rhs._msg)
   , _packed(rhs._packed)
 {
 }
 
 packet::packet(packet &&rhs)
-  : _meta(move(rhs._meta))
+  : _null(rhs._null)
+  , _meta(move(rhs._meta))
   , _msg(rhs._msg)
   , _packed(rhs._packed)
 {
@@ -73,6 +83,8 @@ packet::~packet()
 
 void packet::build()
 {
+  if(_null) return;
+  
   auto p = bson_new();
   
   auto m = bson(_meta.bind());
@@ -85,6 +97,7 @@ void packet::build()
 
 packet &packet::operator =(packet &&rhs)
 {
+  _null = rhs._null;
   _meta = move(rhs._meta);
   _msg = move(rhs._msg);
   _packed = move(rhs._packed);
@@ -93,6 +106,7 @@ packet &packet::operator =(packet &&rhs)
 
 packet &packet::operator =(const packet &rhs)
 {
+  _null = rhs._null;
   _meta = rhs._meta;
   _msg = rhs._msg;
   _packed = rhs._packed;

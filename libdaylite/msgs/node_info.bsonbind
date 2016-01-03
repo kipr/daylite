@@ -17,5 +17,3 @@ string[] in_topics!
 # Publications
 string[] out_topics!
 
-network_time keepalive!
-network_time maxkeepalive!

@@ -45,20 +45,15 @@ int main(int argc, char *argv[])
     std::cerr << "Could not advertise to topic /test" << std::endl;
     return 1;
   }
+  pub->set_firehose(true);
   
-  auto sub = me->subscribe("/test", [](const bson &msg, void *)
-    {
-    print_bson(msg);
-    });
-
-  for(;;)
+  
+  for(uint32_t i = 0;; ++i)
   {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
     string_msg msg;
-    msg.value = "test";
+    msg.value = "test" + to_string(i);
     pub->publish(bson(msg.bind()));
     spinner::spin_once();
-    cout << "." << endl;
   }
   
   return 0;

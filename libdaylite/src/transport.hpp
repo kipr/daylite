@@ -18,6 +18,8 @@ namespace daylite
     
     virtual option<input_channel *>  input()  const = 0;
     virtual option<output_channel *> output() const = 0;
+    
+    virtual void_result update() = 0;
   };
 }
 

@@ -30,10 +30,12 @@ unsigned publisher_impl::subscriber_count()
 void_result publisher_impl::publish(const bson &msg)
 {
   _parent->update_time();
-  return publish(packet(_mailbox->topic(), _parent->time(), msg));
+  return publish(packet(_mailbox->topic(), _parent->time(), msg, false));
 }
 
-void_result publisher_impl::publish(const packet &p)
+void_result publisher_impl::publish(packet p)
 {
+  p.meta().droppable = _firehose;
+  p.build();
   return _mailbox->place_outgoing_mail(p);
 }

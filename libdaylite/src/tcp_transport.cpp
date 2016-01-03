@@ -76,7 +76,7 @@ option<output_channel *> tcp_transport::output() const
   return _output_channel && _output_channel->is_available() ? some(_output_channel) : none<output_channel *>();
 }
 
-void_result tcp_transport::spin_update()
+void_result tcp_transport::update()
 {
   if(!_socket) return success();
   

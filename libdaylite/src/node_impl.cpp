@@ -72,32 +72,23 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
         ++_subscription_count[topic];
       }
       
-
-      for(auto it = _latest_info.begin(); it != _latest_info.end(); ++it)
-      {
-        /*cout << it->first << ":" << endl;
-        cout << "  pubs:" << endl;
-        for(auto p : info.out_topics) cout << "    " << p << endl;
-        cout << "  subs:" << endl;
-        for(auto p : info.in_topics) cout << "    " << p << endl;*/
-      }
       return success();
     }))
   , _id(std::hash<std::string>()(_name))
 {
   gettimeofday(&_last_time, 0);
-  gettimeofday(&_last_prune, 0);
   srand(_last_time.tv_sec * 1000000 + _last_time.tv_usec);
   _id ^= rand();
+  cout << "NODE ID: " << _id << endl;
+
   _network_time.seconds = 0;
   _network_time.microseconds = 0;
   _dave->register_mailbox(_mailbox);
-  _keepalive.seconds = 3600;
-  _keepalive.microseconds = 0;
 }
 
 node_impl::~node_impl()
 {
+  _thread.exit();
   _dave->unregister_mailbox(_mailbox);
   leave_daylite();
   stop_gateway_service();
@@ -163,10 +154,12 @@ void_result node_impl::join_daylite(const std::string &host, uint16_t port, bool
   auto gateway_transport = make_unique<tcp_transport>(gateway);
   if(!(ret = gateway_transport->open())) return ret;
 
-  auto gateway_node = make_shared<remote_node>(this, move(gateway_transport), peer ? remote_node::block_internal : remote_node::allow_internal);
+  auto gateway_node = make_shared<remote_node>(this, move(gateway_transport),
+    peer ? remote_node::block_internal : remote_node::allow_internal);
   _dave->register_mailbox(gateway_node);
   _remotes.push_back(gateway_node);
-  send_info();
+  
+  send_info(false);
 
   return success();
 }
@@ -174,8 +167,17 @@ void_result node_impl::join_daylite(const std::string &host, uint16_t port, bool
 void_result node_impl::leave_daylite()
 {
   _remotes.clear();
-
   return success();
+}
+
+result<bson> node_impl::call(const std::string &t, const bson &value)
+{
+  return failure<bson>("NYI");
+}
+
+shared_ptr<service> node_impl::advertise_service(const std::string &t, service::service_callback_t cb)
+{
+  return shared_ptr<service>(new service_impl(this, topic(t), cb));
 }
 
 shared_ptr<publisher> node_impl::advertise(const std::string &t)
@@ -192,14 +194,14 @@ void node_impl::register_subscriber(subscriber_impl *const subscriber)
 {
   unregister_subscriber(subscriber);
   _active_subscribers.push_back(subscriber);
-  send_info();
+  send_info(false);
 }
 
 void node_impl::register_publisher(publisher_impl *const publisher)
 {
   unregister_publisher(publisher);
   _active_publishers.push_back(publisher);
-  send_info();
+  send_info(false);
 }
 
 void node_impl::unregister_subscriber(subscriber_impl *const subscriber)
@@ -230,8 +232,7 @@ struct node_info node_impl::info() const
   {
     for(auto &host : ret.hosts) host.port = bson_bind::some(_server->socket().port().unwrap());
   }
-  ret.maxkeepalive = _keepalive;
-  ret.keepalive = ret.maxkeepalive;
+
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
   for(auto s : _active_publishers) ret.out_topics.push_back(s->topic().name());
   ret.alive = true;
@@ -240,57 +241,17 @@ struct node_info node_impl::info() const
 
 bool node_impl::touch_node(uint32_t id)
 {
-  auto it = _latest_info.find(id);
-  if(it == _latest_info.end()) return false;
-  it->second.keepalive = it->second.maxkeepalive;
-  //std::cout << "new keepalive for " << id << " : " << it->second.keepalive.seconds + it->second.keepalive.microseconds / 1000000.0 << std::endl;
   return true;
 }
 
-void node_impl::prune_nodes()
-{
-  timeval now;
-  gettimeofday(&now, nullptr);
-  
-  timeval diff;
-  timersub(&now, &_last_prune, &diff);
-
-  // std::cout << "time since last prune: " << diff.tv_sec << std::endl;
-  for(auto it = _latest_info.begin(); it != _latest_info.end();)
-  {
-    auto &ka = it->second.keepalive;
-    timeval k;
-    k.tv_sec = ka.seconds;
-    k.tv_usec = ka.microseconds;
-
-    if(timercmp(&diff, &k, >))
-    {
-      // Prune
-      // std::cout << "Pruning " << it->first << std::endl;
-      it = _latest_info.erase(it);
-      continue;
-    }
-    
-    timeval ans;
-    timersub(&k, &diff, &ans);
-    ka.seconds = ans.tv_sec;
-    ka.microseconds = ans.tv_usec;
-    // std::cout << "Node " << it->first << " now has " << ka.seconds << " remaining" << std::endl;
-
-    ++it;
-  }
-
-  _last_prune = now;
-}
-
-void node_impl::send_info() 
+void node_impl::send_info(const bool include_dead) 
 {
   update_time();
   packet p(topic::internal, _network_time, info().bind());
   _mailbox->place_outgoing_mail(p);
-  prune_nodes();
   for(auto peer : _latest_info)
   {
+    if(!include_dead && !peer.second.alive) continue;
     packet p(topic::internal, _network_time, peer.second.bind());
     _mailbox->place_outgoing_mail(p);
   }
@@ -335,26 +296,38 @@ void node_impl::server_connection(tcp_socket *const socket)
   auto remote = make_shared<remote_node>(this, move(transport));
   _dave->register_mailbox(remote);
   _remotes.push_back(remote);
-  send_info();
+  send_info(false);
 }
 
 void node_impl::server_disconnection(tcp_socket *const socket)
 {
+
   for(auto it = _remotes.begin(); it != _remotes.end();)
   {
-    if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket) { ++it; continue; }
+    if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket)
+    {
+      ++it; continue;
+    }
+    
     _dave->unregister_mailbox(*it);
+  
+    
     for(uint32_t id : (*it)->associated_ids())
     {
       auto lit = _latest_info.find(id);
-      if(lit == _latest_info.end()) continue;
+      if(lit == _latest_info.end())
+      {
+        cout << "Warning: Failed to update node_info for newly dead node " << id << endl;
+        continue;
+      }
+      cout << "Setting node " << id << " to dead" << endl;
       lit->second.alive = false;
       lit->second.out_topics.clear();
       lit->second.in_topics.clear();
     }
     it = _remotes.erase(it);
   }
-  send_info();
+  send_info(true);
 }
 
 void_result node_impl::spin_update()

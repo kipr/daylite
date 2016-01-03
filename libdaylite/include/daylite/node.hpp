@@ -4,6 +4,7 @@
 #include "daylite/compat.hpp"
 #include "daylite/publisher.hpp"
 #include "daylite/subscriber.hpp"
+#include "daylite/service.hpp"
 #include "daylite/result.hpp"
 
 #include <memory>
@@ -20,6 +21,11 @@ namespace daylite
 
     virtual const std::string &get_name() const = 0;
 
+    // Service calls / RPC
+    virtual result<bson> call(const std::string &topic, const bson &value) = 0;
+    virtual std::shared_ptr<service> advertise_service(const std::string &topic, service::service_callback_t callback) = 0;
+    
+    // Publisher/Subscriber
     virtual std::shared_ptr<publisher> advertise(const std::string &topic) = 0;
     virtual std::shared_ptr<subscriber> subscribe(const std::string &topic, subscriber::subscriber_callback_t callback,
       void *usr_arg = nullptr) = 0;

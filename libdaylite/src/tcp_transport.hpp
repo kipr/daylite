@@ -7,7 +7,7 @@
 
 namespace daylite
 {
-  class tcp_transport : public transport, private spinett
+  class tcp_transport : public transport
   {
   public:
     tcp_transport(const socket_address &address);
@@ -23,8 +23,7 @@ namespace daylite
     inline const socket_address &address() { return _address; }
     inline tcp_socket *socket() const { return _socket; }
     
-  private:
-    virtual void_result spin_update();
+    virtual void_result update();
     
     socket_address _address;
     input_channel *_input_channel;
