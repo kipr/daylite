@@ -61,7 +61,7 @@ result<packet> tcp_input_channel::read()
   {
     t = new uint8_t[target_size];
     _buffer.read(t, target_size);
-    reader = bson_reader_new_from_data(tmp, target_size);
+    reader = bson_reader_new_from_data(t, target_size);
   }
   
   if(!reader)
