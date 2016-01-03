@@ -39,15 +39,6 @@ namespace daylite
       new (_t) T(rhs.unwrap());
     }
     
-    option(option<T> &&rhs)
-      : _some(rhs._some)
-    {
-      if(!_some) return;
-      
-      memcpy(_t, rhs._t, sizeof(T));
-      rhs._some = false;
-    }
-    
     ~option()
     {
       if(!_some) return;
@@ -75,15 +66,6 @@ namespace daylite
       if(_some) reinterpret_cast<T *>(_t)->~T();
       _some = rhs._some;
       if(_some) new (_t) T(rhs.unwrap());
-      return *this;
-    }
-    
-    option<T> &operator =(option<T> &&rhs)
-    {
-      if(_some) reinterpret_cast<T *>(_t)->~T();
-      _some = rhs._some;
-      if(_some) memcpy(_t, rhs._t, sizeof(T));
-      rhs._some = false;
       return *this;
     }
     
