@@ -29,7 +29,8 @@ result<packet> tcp_input_channel::read()
   {
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
     if(!ret) return failure<packet>(ret.message(), ret.code());
-    _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
+    const uint32_t size = ret.unwrap();
+    _buffer.write(tmp, size);
   }
 
   // got something but not all
@@ -42,23 +43,36 @@ result<packet> tcp_input_channel::read()
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
     if(ret.code() == EAGAIN) break;
     if(!ret) return failure<packet>(ret.message(), ret.code());
-    _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
+    const uint32_t size = ret.unwrap();
+    _buffer.write(tmp, size);
   }
 
   if(_buffer.size() < target_size) return failure<packet>("Ran out of time", EAGAIN);
 
   // Got all of the packet. Chop it off of the buffer and return it.
-  bson_reader_t *reader = bson_reader_new_from_data(_buffer.data(), target_size);
+  bson_reader_t *reader = 0;
+  uint8_t *t = 0;
+  if(_buffer.contiguous_read_possible(target_size))
+  {
+    reader = bson_reader_new_from_data(_buffer.data(), target_size);
+    _buffer.discard(target_size);
+  }
+  else
+  {
+    t = new uint8_t[target_size];
+    _buffer.read(tmp, target_size);
+    reader = bson_reader_new_from_data(tmp, target_size);
+  }
+  
   if(!reader)
   {
     bson_reader_destroy(reader);
-    _buffer.erase(_buffer.begin(), _buffer.begin() + target_size);
     return failure<packet>("Could not create the BSON reader");
   }
 
   packet p(bson(bson_reader_read(reader, nullptr)));
-  _buffer.erase(_buffer.begin(), _buffer.begin() + target_size);
   bson_reader_destroy(reader);
+  delete[] t;
 
   return success(p);
 }

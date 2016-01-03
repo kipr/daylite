@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  auto sub = n->subscribe(argv[1], [] (const bson_t *const data, void *)
+  auto sub = n->subscribe(argv[1], [] (const bson &data, void *)
   {
     print_bson(data);  
   });
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
   while(!interrupt)
   {
-    this_thread::sleep_for(chrono::milliseconds(200));
+    this_thread::sleep_for(chrono::milliseconds(100));
     spinner::spin_once();
   }
 

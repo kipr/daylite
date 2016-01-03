@@ -47,10 +47,11 @@ int main(int argc, char *argv[])
   }
   pub->set_firehose(true);
   
-  for(;;)
+  
+  for(uint32_t i = 0;; ++i)
   {
     string_msg msg;
-    msg.value = "test";
+    msg.value = "test" + to_string(i);
     pub->publish(bson(msg.bind()));
     spinner::spin_once();
   }

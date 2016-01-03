@@ -55,6 +55,7 @@ packet::packet(const class topic &t, const network_time &stamp, const bson &raw_
 {
   _meta.topic = t.name();
   _meta.stamp = stamp;
+  _meta.droppable = false;
   if(autobuild) build();
 }
 

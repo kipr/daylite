@@ -64,7 +64,6 @@ namespace daylite
       return _id;
     }
 
-    void prune_nodes();
     inline const network_time &time() const { return _network_time; }
     void update_time();
 
@@ -81,7 +80,7 @@ namespace daylite
     void unregister_publisher(publisher_impl *const publisher);
     struct node_info info() const;
     bool touch_node(uint32_t id);
-    void send_info();
+    void send_info(const bool include_dead);
 
     void update_peer_link(const node_info &info);
 

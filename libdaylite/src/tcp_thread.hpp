@@ -22,6 +22,7 @@ namespace daylite
     void_result add_socket(transport *const socket);
     void_result remove_socket(transport *const socket);
     packet next(transport *const socket);
+    void_result send(transport *const socket, const packet &p);
 
     void exit();
 
@@ -30,10 +31,11 @@ namespace daylite
     {
       std::mutex mut;
       std::unordered_map<std::string, std::deque<packet>> topic_queues;
+      std::deque<packet> out;
     };
 
     void run();
-
+    std::mutex _mut;
     std::unordered_map<transport *, std::unique_ptr<buffer>> _buffers;
     std::thread _thread;
     bool _exit;

@@ -36,17 +36,16 @@ void_result remote_node::send(const packet &p)
   mod.meta().path.push_back(_parent->id());
   mod.meta().id = _parent->id();
   mod.build();
-  auto out = _link->output();
-  if(out.none()) return failure("link not open");
-  return out.unwrap()->write(mod);
+  
+  return _parent->_thread.send(_link.get(), mod);
 }
 
 void_result remote_node::spin_update()
 {
-  for(uint16_t i = 0; i < 1000U; ++i)
+  for(;;)
   {
     auto p = _parent->_thread.next(_link.get());
-    if(p.null()) continue;
+    if(p.null()) break;
 
     // If we have already received this message,
     // ignore it.
