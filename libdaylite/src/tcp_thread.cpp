@@ -17,6 +17,7 @@ static void print_bson(const bson_t *const msg)
 
 tcp_thread::tcp_thread()
   : _thread(bind(&tcp_thread::run, this))
+  , _exit(false)
 {
 }
 
