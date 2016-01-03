@@ -1,6 +1,7 @@
 #include "tcp_thread.hpp"
 #include "tcp_transport.hpp"
 #include <functional>
+#include <iostream>
 
 using namespace daylite;
 using namespace std;
@@ -31,10 +32,8 @@ packet tcp_thread::next(transport *const socket)
 {
   assert(socket);
   auto it = _buffers.find(socket);
-  if(it == _buffers.end())
-  {
-    return packet();
-  }
+  if(it == _buffers.end()) return packet();
+  
   auto &buff = it->second;
   
   buff->mut.lock();
@@ -45,10 +44,7 @@ packet tcp_thread::next(transport *const socket)
     
     packet ret(pit->second.front());
     pit->second.pop_front();
-    if(pit->second.empty())
-    {
-      buff->topic_queues.erase(pit);
-    }
+    if(pit->second.empty()) buff->topic_queues.erase(pit);
     
     buff->mut.unlock();
     return ret;
@@ -96,9 +92,12 @@ void tcp_thread::run()
         for(auto pit = lit->second.begin(); pit != lit->second.end();)
         {
           if(!pit->meta().droppable) { ++pit; continue; }
+
           pit = lit->second.erase(pit);
         }
+
         lit->second.push_back(p_val);
+
       }
       
       it->second->mut.unlock();

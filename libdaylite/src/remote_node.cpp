@@ -60,12 +60,6 @@ void_result remote_node::spin_update()
 
     _associated_ids.insert(p.meta().id);
 
-    // Reset the keep alive for this node
-    if(!_parent->touch_node(p.meta().id))
-    {
-      std::cout << "Warning: Unable to update keepalive for node " << p.meta().id << std::endl;
-    }
-
     place_outgoing_mail(p);
   }
 
