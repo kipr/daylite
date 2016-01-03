@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     msg.value = "test" + to_string(i);
     pub->publish(bson(msg.bind()));
     spinner::spin_once();
+    usleep(1000);
   }
   
   return 0;

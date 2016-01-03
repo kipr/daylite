@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
 
   for(;;)
   {
+    usleep(1000);
     spinner::spin_once();
   }
   
