@@ -7,6 +7,7 @@ foreach(EXAMPLE ${EXAMPLES})
   get_filename_component(NAME_ "${EXAMPLE}" NAME)
   add_executable(${NAME_} ${EXAMPLE})
   target_link_libraries(${NAME_} daylite ${BSON_LIBRARY})
+  install(TARGETS ${NAME_} RUNTIME DESTINATION bin/daylite)
   
   if(WIN32)
     # copy daylite.dll into build folder
