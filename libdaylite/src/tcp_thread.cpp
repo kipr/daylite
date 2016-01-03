@@ -16,9 +16,9 @@ static void print_bson(const bson_t *const msg)
 }
 
 tcp_thread::tcp_thread()
-  : _thread(bind(&tcp_thread::run, this))
-  , _exit(false)
+  : _exit(false)
 {
+  _thread = thread(bind(&tcp_thread::run, this));
 }
 
 void_result tcp_thread::add_socket(transport *const socket)
