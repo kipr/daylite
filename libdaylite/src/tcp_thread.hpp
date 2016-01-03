@@ -9,6 +9,8 @@
 #include <thread>
 #include <mutex>
 #include <memory>
+#include <string>
+#include <unordered_set>
 
 
 namespace daylite
@@ -31,7 +33,10 @@ namespace daylite
     {
       std::mutex mut;
       std::unordered_map<std::string, std::deque<packet>> topic_queues;
+      std::deque<packet> in;
+      std::unordered_set<std::string> in_firehose;
       std::deque<packet> out;
+      std::unordered_set<std::string> out_firehose;
     };
 
     void run();

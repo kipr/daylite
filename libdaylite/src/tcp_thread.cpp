@@ -2,6 +2,9 @@
 #include "tcp_transport.hpp"
 #include <functional>
 #include <iostream>
+#include <unordered_set>
+#include <string>
+#include <mutex>
 
 using namespace daylite;
 using namespace std;
@@ -25,9 +28,8 @@ void_result tcp_thread::add_socket(transport *const socket)
 {
   assert(socket);
   if(_buffers.find(socket) != _buffers.end()) return failure("Socket already watched by thread");
-  _mut.lock();
+  lock_guard<mutex> lock(_mut);
   _buffers[socket] = unique_ptr<buffer>(new buffer);
-  _mut.unlock();
   return success();
 }
 
@@ -37,9 +39,8 @@ void_result tcp_thread::remove_socket(transport *const socket)
   auto it = _buffers.find(socket);
   if(it == _buffers.end()) return failure("Socket not found");
   
-  _mut.lock();
+  lock_guard<mutex> lock(_mut);
   _buffers.erase(it);
-  _mut.unlock();
   return success();
 }
 
@@ -51,24 +52,21 @@ packet tcp_thread::next(transport *const socket)
   
   auto &buff = it->second;
   
-  buff->mut.lock();
+  lock_guard<mutex> lock(buff->mut);
 
-  for(auto pit = buff->topic_queues.begin(); pit != buff->topic_queues.end(); ++pit)
+  if(buff->in.empty()) return packet();
+  
+  auto ret = buff->in.front();
+  buff->in.pop_front();
+  
+  if(ret.meta().droppable)
   {
-    if(pit->second.empty()) continue;
-    
-
-    packet ret(pit->second.front());
-    pit->second.pop_front();
-    if(pit->second.empty()) buff->topic_queues.erase(pit);
-    
-    buff->mut.unlock();
-    return ret;
+    const auto &name = ret.topic().name();
+    auto pit = buff->in_firehose.find(name);
+    if(pit != buff->in_firehose.end()) buff->in_firehose.erase(pit);
   }
   
-  buff->mut.unlock();
-  
-  return packet();
+  return ret;
 }
 
 void_result tcp_thread::send(transport *const socket, const packet &p)
@@ -77,9 +75,17 @@ void_result tcp_thread::send(transport *const socket, const packet &p)
   assert(!p.null());
   auto it = _buffers.find(socket);
   if(it == _buffers.end()) return failure("No such socket found");
-  it->second->mut.lock();
-  it->second->out.push_back(p);
-  it->second->mut.unlock();
+  auto &buff = it->second;
+  
+  lock_guard<mutex> lock(buff->mut);
+  if(p.meta().droppable)
+  {
+    const auto &name = p.topic().name();
+    if(buff->out_firehose.find(name) != buff->out_firehose.end()) return success();
+    buff->out_firehose.insert(name); 
+  }
+  buff->out.push_back(p);
+  
   return success();
 }
 
@@ -99,20 +105,22 @@ void tcp_thread::run()
       if(!it->second) continue;
       
       auto l = it->first;
+      auto &buff = it->second;
       
       auto out = l->output();
       if(out.some())
       {
-        it->second->mut.lock();
-        for(const packet &k : it->second->out)
+        lock_guard<mutex> lock(buff->mut);
+        for(const packet &k : buff->out)
         {
           if(!out.unwrap()->write(k))
           {
             cout << "Failed to write packet!" << endl;
           }
         }
-        it->second->out.clear();
-        it->second->mut.unlock();
+        
+        buff->out.clear();
+        buff->out_firehose.clear();
       }
       
       l->update();
@@ -127,34 +135,21 @@ void tcp_thread::run()
         if(!p) break;
 
         auto p_val = p.unwrap();
-        auto topic = p_val.topic().name();
-      
-        it->second->mut.lock();
-      
-        auto lit = it->second->topic_queues.find(topic);
-        if(lit == it->second->topic_queues.end())
+        const auto &topic = p_val.topic().name();
+
         {
-          it->second->topic_queues[topic] = deque<packet> { p_val };
-        }
-        else
-        {
-          // Drop packets that are now outdated
-          for(auto pit = lit->second.begin(); pit != lit->second.end();)
+          lock_guard<mutex> lock(buff->mut);
+          if(p_val.meta().droppable)
           {
-            if(!pit->meta().droppable) { ++pit; continue; }
-
-            pit = lit->second.erase(pit);
+            if(buff->in_firehose.find(topic) != buff->in_firehose.end()) continue;
+            buff->in_firehose.insert(topic);
           }
-
-          lit->second.push_back(p_val);
+          buff->in.push_back(p_val);
         }
-      
-        it->second->mut.unlock();
       }
     }
     _mut.unlock();
     
     usleep(1000U);
-    //this_thread::yield();
   }
 }
