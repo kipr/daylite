@@ -154,6 +154,7 @@ void tcp_thread::run()
     }
     _mut.unlock();
     
-    this_thread::yield();
+    usleep(1000U);
+    //this_thread::yield();
   }
 }
