@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     std::cerr << "Could not advertise to topic /test" << std::endl;
     return 1;
   }
-  pub->set_firehose(true);
+  pub->set_firehose(false);
   
   
   for(uint32_t i = 0;; ++i)
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     msg.value = "test" + to_string(i);
     pub->publish(bson(msg.bind()));
     spinner::spin_once();
-    usleep(1000);
+    // usleep(1000);
   }
   
   return 0;

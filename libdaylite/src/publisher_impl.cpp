@@ -9,6 +9,7 @@ publisher_impl::publisher_impl(node_impl *const parent, const daylite::topic &t,
   , _t(t)
   , _dave(dave)
   , _mailbox(make_shared<mailbox>(t))
+  , _firehose(false)
 {
   _parent->register_publisher(this);
   _dave->register_mailbox(_mailbox);
