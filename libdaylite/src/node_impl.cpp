@@ -21,7 +21,7 @@ using namespace std;
 
 shared_ptr<node> node::create_node(const std::string &name)
 {
-  return shared_ptr<node>(new node_impl(name, none<socket_address>()));
+  return shared_ptr<node>(new node_impl(name));
 }
 
 static void print_bson(const bson_t *const msg)
@@ -38,7 +38,7 @@ static inline bool operator >(const network_time &l, const network_time &r)
   return l.seconds > r.seconds || (l.seconds == r.seconds && l.microseconds > r.microseconds);
 }
 
-node_impl::node_impl(const string &name, const option<socket_address> &us)
+node_impl::node_impl(const string &name)
   : _name(name)
   , _dave(make_shared<mailman>(mailman()))
   , _mailbox(new mailbox(topic::internal, [this] (const packet &p) {
@@ -82,9 +82,7 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
 node_impl::~node_impl()
 {
   _thread.exit();
-  _dave->unregister_mailbox(_mailbox);
-  leave_daylite();
-  stop_gateway_service();
+  stop();
 }
 
 
@@ -101,8 +99,12 @@ void_result node_impl::gateway(const std::string &host, const uint16_t port)
 
 void_result node_impl::stop()
 {
+  cout << "Stopping node.." << endl;
   stop_gateway_service();
   leave_daylite();
+  _dave->clear();
+  for(const auto &splat : _splats) delete splat.second;
+  for(const auto &splat : _remote_splats) delete splat.second;
   return success();
 } 
 

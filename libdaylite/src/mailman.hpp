@@ -27,6 +27,8 @@ namespace daylite
      * Delivered to all local mailboxes.
      */
     void_result send(const uint32_t sender_id, const packet &p);
+    
+    void clear();
 
   private:
     std::unordered_map<topic, std::unordered_map<uint32_t, std::shared_ptr<mailbox>>> _mailboxes;

@@ -54,3 +54,8 @@ void_result mailman::send(const uint32_t sender_id, const packet &p)
 
   return success();
 }
+
+void mailman::clear()
+{
+  _mailboxes.clear();
+}

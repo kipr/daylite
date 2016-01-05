@@ -38,7 +38,7 @@ namespace daylite
     friend class publisher_impl;
     friend class remote_node;
 
-    node_impl(const std::string &name, const option<socket_address> &us);
+    node_impl(const std::string &name);
     ~node_impl();
 
     void_result start(const std::string &known_host, const uint16_t known_port);
