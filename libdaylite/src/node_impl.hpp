@@ -121,10 +121,10 @@ namespace daylite
 #ifdef SPLAT_ENABLED
     void_result register_splat(const splat_info &info);
     void_result unregister_splat(const splat_info &info);
-    void push_splat(const packet &p);
+    void_result push_splat(const packet &p);
     void update_splats();
     bool is_only_splat(const std::string &topic);
-    std::unordered_map<std::string, unique_ptr<splat>> _splat;
+    std::unordered_map<std::string, splat *> _splats;
 #endif
   };
 }

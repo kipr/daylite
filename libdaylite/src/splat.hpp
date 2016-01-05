@@ -1,6 +1,11 @@
 #ifndef _DAYLITE_SPLAT_HPP_
 #define _DAYLITE_SPLAT_HPP_
 
+#include <string>
+#include <stdint.h>
+#include "daylite/result.hpp"
+#include "packet.hpp"
+
 #ifdef SPLAT_ENABLED
 
 namespace daylite
@@ -41,7 +46,6 @@ namespace daylite
     size_t _size;
     
     uint32_t _current_version;
-    bool _update_available;
     packet _latest;
     
     enum

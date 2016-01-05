@@ -10,13 +10,16 @@
 using namespace daylite;
 using namespace std;
 
-struct splat_data
+namespace daylite
 {
-  pthread_mutex_t rw_mutex;
-  uint32_t version;
-  uint32_t size;
-  uint8_t data[0];
-};
+  struct splat_data
+  {
+    pthread_mutex_t rw_mutex;
+    uint32_t version;
+    uint32_t size;
+    uint8_t data[0];
+  };
+}
 
 splat::splat(const uint32_t node_id, const std::string &topic)
   : _node_id(node_id)
@@ -59,7 +62,7 @@ void splat::poll()
   auto reader = bson_reader_new_from_data(_backing->data, _backing->size);
   _latest = packet(bson_reader_read(reader, 0));
   bson_reader_destroy(reader);
-  _latest->set_local_only(true);
+  _latest.set_local_only(true);
   
   pthread_mutex_unlock(&_backing->rw_mutex);
 }
@@ -72,11 +75,8 @@ bool splat::update_available() const
 void_result splat::create(const size_t max_size)
 {
   void_result ret = map(max_size, PROT_WRITE);
-  if(ret)
-  {
-    _mode = pub;
-    _backing->owner_connected = true;
-  }
+  if(ret) _mode = pub;
+  
   return ret;
 }
 
@@ -91,7 +91,7 @@ void_result splat::close()
 {
   assert(_mode != off);
   _mode = off;
-  return unmap(_size);
+  return unmap();
 }
 
 void_result splat::map(const size_t size, const int mode)
@@ -107,10 +107,10 @@ void_result splat::map(const size_t size, const int mode)
   auto filename = file.str();
   _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
   if(_fd < 0) return failure("Failed to create " + file.str());
-  _backing = reinterpret_cast<splat_data *>(mmap(0, size, mode, MAP_SHARED, fd, 0));
+  _backing = reinterpret_cast<splat_data *>(mmap(0, size, mode, MAP_SHARED, _fd, 0));
   if(reinterpret_cast<void *>(_backing) == MAP_FAILED)
   {
-    close(_fd);
+    ::close(_fd);
     _fd = -1;
     return failure("Failed to memory map file " + filename);
   }
@@ -130,7 +130,7 @@ void_result splat::unmap()
     return failure("Memory un-mapping failed!");
   }
   
-  close(_fd);
+  ::close(_fd);
   _fd = -1;
   _backing = 0;
   _mode = off;

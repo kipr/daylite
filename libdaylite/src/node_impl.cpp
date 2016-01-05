@@ -360,7 +360,7 @@ void_result node_impl::register_splat(const splat_info &info)
 {
   auto it = _splats.find(info.topic);
   assert(it == _splats.end());
-  unique_ptr<splat> splat_ptr(new splat(info.id, info.topic));
+  auto splat_ptr = new splat(info.node_id, info.topic);
   _splats.insert({info.topic, splat_ptr});
   return splat_ptr->connect(info.size);
 }
@@ -370,8 +370,9 @@ void_result node_impl::unregister_splat(const splat_info &info)
   auto it = _splats.find(info.topic);
   if(it == _splats.end()) return failure("Splat not found");
   it->second->close();
+  delete it->second;
   _splats.erase(it);
-  return sucess();
+  return success();
 }
 
 void_result node_impl::push_splat(const packet &p)
@@ -379,10 +380,9 @@ void_result node_impl::push_splat(const packet &p)
   auto it = _splats.find(p.meta().topic);
   if(it == _splats.end())
   {
-    unique_ptr<splat> splat_ptr(new splat(_id, p.meta().topic));
-    it = _splats.insert({p.meta().topic, splat_ptr}).first;
+    it = _splats.insert({p.meta().topic, new splat(_id, p.meta().topic)}).first;
   }
-  auto splat = it->second;
+  const auto &splat = it->second;
   if(!splat->is_on())
   {
     auto ret = splat->create(p.packed()->len << 1);
@@ -396,8 +396,8 @@ void node_impl::update_splats()
   for(const auto &p : _splats)
   {
     const auto &splat = p.second;
-    if(!splat->update_avilable()) continue;
-    auto it = _local_subscription_count.find(splat.topic());
+    if(!splat->update_available()) continue;
+    auto it = _local_subscription_count.find(splat->topic());
     if(it == _local_subscription_count.end()) continue;
     splat->poll();
     _mailbox->place_outgoing_mail(splat->latest());
@@ -406,9 +406,7 @@ void node_impl::update_splats()
 
 bool node_impl::is_only_splat(const std::string &topic)
 {
-  const auto &subit = _subscription_count.find(topic);
-  const auto &splatit = _splat_count.find(topic);
-  return subit != _subscription_count.end() && splatit != _splat_it.end() && subit->second == splatit->second;
+  return false;
 }
 
 #endif
