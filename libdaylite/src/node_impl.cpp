@@ -5,6 +5,7 @@
 #include "remote_node.hpp"
 #include "mailman.hpp"
 #include "network_interfaces.hpp"
+#include "daylite/util.hpp"
 #include <boost/uuid/random_generator.hpp>
 #ifdef WIN32
 extern "C" int gettimeofday(struct timeval *tp, struct timezone *tzp);
@@ -68,6 +69,7 @@ node_impl::node_impl(const string &name)
       return success();
     }))
   , _id(std::hash<std::string>()(_name))
+  , _auto_exit(false)
 {
   gettimeofday(&_last_time, 0);
   srand(_last_time.tv_sec * 1000000 + _last_time.tv_usec);
@@ -355,6 +357,12 @@ void_result node_impl::spin_update()
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket()) { ++it; continue; }
     _dave->unregister_mailbox(*it);
     it = _remotes.erase(it);
+  }
+  if(_auto_exit && should_exit())
+  {
+    cout << "Daylite is auto-exiting" << endl;
+    delete this;
+    _exit(1);
   }
   return success();
 }

@@ -40,6 +40,8 @@ namespace daylite
     void_result map(const size_t size, const int mode);
     void_result unmap();
     
+    void init_mut();
+    
     uint32_t _node_id;
     std::string _topic;
     int _fd;

@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 #include <sys/mman.h>
 #include <pthread.h>
+#include <errno.h>
 
 using namespace daylite;
 using namespace std;
@@ -84,11 +85,7 @@ void_result splat::create(const size_t max_size)
   void_result ret = map(max_size, PROT_READ | PROT_WRITE);
   if(!ret) return ret;
   memset(reinterpret_cast<uint8_t *>(_backing), 0, _size);
-  pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr);
-  pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-  pthread_mutex_init(&_backing->rw_mutex, &attr);
-  pthread_mutexattr_destroy(&attr);
+  init_mut();
   
   _backing->size = 0;
   _backing->version = 0U;
@@ -158,6 +155,15 @@ void_result splat::unmap()
   _size = 0;
   
   return success();
+}
+
+void splat::init_mut()
+{
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+  pthread_mutex_init(&_backing->rw_mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
 }
 
 #endif

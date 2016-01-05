@@ -31,6 +31,9 @@ namespace daylite
       void *usr_arg = nullptr) = 0;
       
     virtual uint32_t thread_sleep_duration() const = 0;
+    
+    virtual void set_auto_exit(const bool auto_exit) = 0;
+    virtual bool auto_exit() const = 0;
   };
 }
 

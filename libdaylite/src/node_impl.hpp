@@ -68,6 +68,9 @@ namespace daylite
     void update_time();
     
     uint32_t thread_sleep_duration() const { return _thread.sleep_duration(); }
+    
+    void set_auto_exit(const bool auto_exit) { _auto_exit = auto_exit; }
+    bool auto_exit() const { return _auto_exit; }
 
   private:
     void_result start_gateway_service(const std::string &local_host, uint16_t local_port);
@@ -117,6 +120,8 @@ namespace daylite
     network_time _keepalive;
     
     tcp_thread _thread;
+    
+    bool _auto_exit;
     
 #ifdef SPLAT_ENABLED
     void_result register_splat(const splat_info &info);
