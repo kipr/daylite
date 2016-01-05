@@ -235,6 +235,15 @@ struct node_info node_impl::info() const
 
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
   for(auto s : _active_publishers) ret.out_topics.push_back(s->topic().name());
+  splat_info info;
+  info.node_id = _id;
+  for(const auto &s : _splats)
+  {
+    const auto &splat = s.second;
+    info.size = splat->size();
+    info.topic = splat->topic();
+    ret.splats.push_back(info);
+  }
   ret.alive = true;
   return ret;
 }
@@ -346,37 +355,60 @@ void_result node_impl::spin_update()
 void node_impl::tally(const node_info &info)
 {
   for(const auto &topic : info.in_topics) ++_subscription_count[topic];
-  for(const auto &splat : info.splats) ++_splat_count[splat.topic];
+  for(const auto &splat : info.splats)
+  {
+    ++_splat_count[splat.topic];
+    register_splat(splat);
+  }
 }
 
 void node_impl::untally(const node_info &info)
 {
   for(const auto &topic : info.in_topics) --_subscription_count[topic];
-  for(const auto &splat : info.splats) --_splat_count[splat.topic];
+  for(const auto &splat : info.splats)
+  {
+    unregister_splat(splat);
+    --_splat_count[splat.topic];
+  }
 }
 
 #ifdef SPLAT_ENABLED
 void_result node_impl::register_splat(const splat_info &info)
 {
-  auto it = _splats.find(info.topic);
-  assert(it == _splats.end());
+  
+  auto it = _remote_splats.find(info.topic);
+  if(it != _remote_splats.end())
+  {
+    cout << "Warning: Splat for topic " << info.topic << " "
+         << "already exists, but a second registration has been requested." << endl
+         << "Closing old splat and opening new one." << endl;
+    if(it->second->is_on()) it->second->close();
+    delete it->second;
+    _remote_splats.erase(it);
+  }
   auto splat_ptr = new splat(info.node_id, info.topic);
-  _splats.insert({info.topic, splat_ptr});
+  _remote_splats.insert({info.topic, splat_ptr});
+  cout << "Registered splat on topic " << info.topic << endl;
   return splat_ptr->connect(info.size);
 }
 
 void_result node_impl::unregister_splat(const splat_info &info)
 {
-  auto it = _splats.find(info.topic);
-  if(it == _splats.end()) return failure("Splat not found");
+  auto it = _remote_splats.find(info.topic);
+  if(it == _remote_splats.end()) return failure("Splat not found");
   it->second->close();
   delete it->second;
-  _splats.erase(it);
+  _remote_splats.erase(it);
+  cout << "Unregistered splat on topic " << info.topic << endl;
   return success();
 }
 
 void_result node_impl::push_splat(const packet &p)
 {
+  // Is anyone even listening?
+  auto subit = _subscription_count.find(p.meta().topic);
+  if(subit == _subscription_count.end() || !subit->second) return success();
+  
   auto it = _splats.find(p.meta().topic);
   if(it == _splats.end())
   {
@@ -386,14 +418,16 @@ void_result node_impl::push_splat(const packet &p)
   if(!splat->is_on())
   {
     auto ret = splat->create(p.packed()->len << 1);
+    send_info(false);
     if(!ret) return ret;
   }
+  splat->push(p);
   return success();
 }
 
 void node_impl::update_splats()
 {
-  for(const auto &p : _splats)
+  for(const auto &p : _remote_splats)
   {
     const auto &splat = p.second;
     if(!splat->update_available()) continue;

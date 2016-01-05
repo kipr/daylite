@@ -125,6 +125,7 @@ namespace daylite
     void update_splats();
     bool is_only_splat(const std::string &topic);
     std::unordered_map<std::string, splat *> _splats;
+    std::unordered_map<std::string, splat *> _remote_splats;
 #endif
   };
 }

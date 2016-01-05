@@ -43,14 +43,15 @@ void_result remote_node::send(const packet &p)
   bool should_send = true;
   
 #ifdef SPLAT_ENABLED
-  bool droppable = p.meta().droppable;
-  if(droppable) _parent->push_splat(mod);
+  bool splattable = p.meta().droppable && p.meta().origin_id == _parent->_id;
+  // cout << "REMOTE NODE SEND " << p.meta().topic << ": " << p.packed()->len << " (splat: " << splattable << ")" << endl;
+  if(splattable) _parent->push_splat(mod);
   // FIXME: This is not the correct condition.
   // We still want to send to *truly* remote clients
   // over TCP, but there is currently no way to
   // identify unique systems on the network to
   // generate disconnected splat neighborhoods.
-  should_send = !droppable;
+  should_send = !splattable;
 #endif
   
   return should_send ? _parent->_thread.send(_link.get(), mod) : success();
@@ -58,6 +59,9 @@ void_result remote_node::send(const packet &p)
 
 void_result remote_node::spin_update()
 {
+#ifdef SPLAT_ENABLED
+  _parent->update_splats();
+#endif
   for(;;)
   {
     auto p = _parent->_thread.next(_link.get());
@@ -77,8 +81,5 @@ void_result remote_node::spin_update()
 
     place_outgoing_mail(p);
   }
-#ifdef SPLAT_ENABLED
-  _parent->update_splats();
-#endif
   return success();
 }

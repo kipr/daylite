@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <sys/mman.h>
+#include <iostream>
 
 using namespace daylite;
 using namespace std;
@@ -28,12 +29,13 @@ splat::splat(const uint32_t node_id, const std::string &topic)
   , _backing(0)
   , _size(0)
   , _mode(off)
+  , _current_version(0)
 {
 }
 
 splat::~splat()
 {
-  
+  if(_mode != off) close();
 }
 
 void splat::push(const packet &latest)
@@ -42,6 +44,8 @@ void splat::push(const packet &latest)
   const auto &packed = latest.packed();
   
   const uint32_t size = packed->len;
+  
+  assert(size < _size - sizeof(splat_data));
   const uint8_t *data = bson_get_data(packed);
   ++_current_version;
   
@@ -69,15 +73,23 @@ void splat::poll()
 
 bool splat::update_available() const
 {
-  return _backing->version != _current_version;
+  return _backing->version != _current_version && _backing->size;
 }
 
 void_result splat::create(const size_t max_size)
 {
   void_result ret = map(max_size, PROT_WRITE);
-  if(ret) _mode = pub;
-  
-  return ret;
+  if(!ret) return ret;
+  memset(reinterpret_cast<uint8_t *>(_backing), 0, _size);
+  _mode = pub;
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+  pthread_mutex_init(&_backing->rw_mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
+  _backing->size = 0;
+  _backing->version = 0U;
+  return success();
 }
 
 void_result splat::connect(const size_t defined_max_size)
@@ -106,7 +118,9 @@ void_result splat::map(const size_t size, const int mode)
   
   auto filename = file.str();
   _fd = open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+  
   if(_fd < 0) return failure("Failed to create " + file.str());
+  ftruncate(_fd, size);
   _backing = reinterpret_cast<splat_data *>(mmap(0, size, mode, MAP_SHARED, _fd, 0));
   if(reinterpret_cast<void *>(_backing) == MAP_FAILED)
   {

@@ -20,6 +20,7 @@ namespace daylite
     
     inline uint32_t node_id() const { return _node_id; }
     inline std::string topic() const { return _topic; }
+    inline size_t size() const { return _size; }
     
     void push(const packet &latest);
     void poll();

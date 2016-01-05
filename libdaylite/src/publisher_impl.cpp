@@ -37,6 +37,7 @@ void_result publisher_impl::publish(const bson &msg)
 void_result publisher_impl::publish(packet p)
 {
   p.meta().droppable = _firehose;
+  p.meta().origin_id = _parent->_id;
   p.build();
   return _mailbox->place_outgoing_mail(p);
 }
