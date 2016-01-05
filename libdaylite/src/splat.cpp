@@ -6,7 +6,8 @@
 #include <algorithm>
 #include <stdio.h>
 #include <sys/mman.h>
-#include <iostream>
+#include <sys/mman.h>
+#include <pthread.h>
 
 using namespace daylite;
 using namespace std;
