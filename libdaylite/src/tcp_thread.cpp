@@ -106,8 +106,8 @@ void tcp_thread::run()
   while(!_exit)
   {
     _mut.lock();
-    uint32_t out_packet_count = 0;
-    uint32_t in_packet_count = 0;
+    uint16_t out_packet_count = 0;
+    uint16_t in_packet_count = 0;
     
     for(auto it = _buffers.begin(); it != _buffers.end(); ++it)
     {
@@ -163,12 +163,11 @@ void tcp_thread::run()
   }
 }
 
-void tcp_thread::update_sleep(const uint32_t new_packet_count)
+void tcp_thread::update_sleep(const uint16_t new_packet_count)
 {
-  
-  const static uint32_t max_sleep = 100000U;
-  const static uint32_t min_sleep = 2000U;
-  const uint32_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
+  const static uint16_t max_sleep = 0xFFFFU;
+  const static uint16_t min_sleep = 2000U;
+  const uint16_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
   _sleep = std::max(temporal_packet_distance, min_sleep) * 0.1 + _sleep * 0.9;
   usleep(_sleep);
 }

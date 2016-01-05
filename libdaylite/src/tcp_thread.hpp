@@ -28,7 +28,7 @@ namespace daylite
 
     void exit();
     
-    uint32_t sleep_duration() const { return _sleep; }
+    uint16_t sleep_duration() const { return _sleep; }
 
   private:
     struct buffer
@@ -43,12 +43,12 @@ namespace daylite
     };
 
     void run();
-    void update_sleep(const uint32_t new_packet_count);
+    void update_sleep(const uint16_t new_packet_count);
     
     std::mutex _mut;
     std::unordered_map<transport *, std::unique_ptr<buffer>> _buffers;
     std::thread _thread;
-    uint32_t _sleep;
+    uint16_t _sleep;
     bool _exit;
   };
 }
