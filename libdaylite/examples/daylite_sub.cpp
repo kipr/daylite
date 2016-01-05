@@ -8,13 +8,14 @@
 
 #include "daylite/node.hpp"
 #include "daylite/spinner.hpp"
+#include "daylite/util.hpp"
 
 #include "string_msg.hpp"
 
 using namespace daylite;
 using namespace std;
 
-void print_bson(const bson_t *const msg)
+static void print_bson(const bson_t *const msg)
 {
   size_t len;
   char *str;
@@ -44,9 +45,9 @@ int main(int argc, char *argv[])
     print_bson(msg);
     });
 
-  for(;;)
+  while(!should_exit())
   {
-    usleep(1000);
+    usleep(1000U);
     spinner::spin_once();
   }
   

@@ -7,6 +7,7 @@
 
 #include "daylite/node.hpp"
 #include "daylite/spinner.hpp"
+#include "daylite/util.hpp"
 
 using namespace daylite;
 
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
     return 1;
   }
   
-  for(;;)
+  while(!should_exit())
   {
     spinner::spin_once();
     usleep(me->thread_sleep_duration());

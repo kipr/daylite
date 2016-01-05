@@ -45,7 +45,14 @@ void_result remote_node::send(const packet &p)
 #ifdef SPLAT_ENABLED
   bool splattable = p.meta().droppable && p.meta().origin_id == _parent->_id;
   // cout << "REMOTE NODE SEND " << p.meta().topic << ": " << p.packed()->len << " (splat: " << splattable << ")" << endl;
-  if(splattable) _parent->push_splat(mod);
+  if(splattable)
+  {
+    auto ret = _parent->push_splat(mod);
+    if(!ret)
+    {
+      cout << "Warning: Failed to push splat: " << ret.message() << endl;
+    }
+  }
   // FIXME: This is not the correct condition.
   // We still want to send to *truly* remote clients
   // over TCP, but there is currently no way to

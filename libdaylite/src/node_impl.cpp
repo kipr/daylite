@@ -24,7 +24,7 @@ shared_ptr<node> node::create_node(const std::string &name)
   return shared_ptr<node>(new node_impl(name, none<socket_address>()));
 }
 
-void print_bson(const bson_t *const msg)
+static void print_bson(const bson_t *const msg)
 {
   size_t len;
   char *str;
@@ -48,7 +48,6 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       {
         _network_time = p.stamp();
       }
-
       try
       {
         info = node_info::unbind(p.msg());
@@ -335,6 +334,7 @@ void node_impl::server_disconnection(tcp_socket *const socket)
       lit->second.alive = false;
       lit->second.out_topics.clear();
       lit->second.in_topics.clear();
+      lit->second.splats.clear();
     }
     it = _remotes.erase(it);
   }
@@ -387,9 +387,16 @@ void_result node_impl::register_splat(const splat_info &info)
     _remote_splats.erase(it);
   }
   auto splat_ptr = new splat(info.node_id, info.topic);
+  auto ret = splat_ptr->connect(info.size);
+  if(!ret)
+  {
+    delete splat_ptr;
+    return ret;
+  }
+  
   _remote_splats.insert({info.topic, splat_ptr});
   cout << "Registered splat on topic " << info.topic << endl;
-  return splat_ptr->connect(info.size);
+  return ret;
 }
 
 void_result node_impl::unregister_splat(const splat_info &info)
@@ -412,15 +419,14 @@ void_result node_impl::push_splat(const packet &p)
   auto it = _splats.find(p.meta().topic);
   if(it == _splats.end())
   {
-    it = _splats.insert({p.meta().topic, new splat(_id, p.meta().topic)}).first;
+    auto splt = new splat(_id, p.meta().topic);
+    auto ret = splt->create(p.packed()->len << 1);
+    if(!ret) return ret;
+    it = _splats.insert({p.meta().topic, splt}).first;
+    send_info(false);
+    cout << "Created new splat for " << p.meta().topic << endl;
   }
   const auto &splat = it->second;
-  if(!splat->is_on())
-  {
-    auto ret = splat->create(p.packed()->len << 1);
-    send_info(false);
-    if(!ret) return ret;
-  }
   splat->push(p);
   return success();
 }

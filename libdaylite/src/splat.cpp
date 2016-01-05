@@ -49,7 +49,7 @@ void splat::push(const packet &latest)
   const uint8_t *data = bson_get_data(packed);
   ++_current_version;
   
-  pthread_mutex_lock(&_backing->rw_mutex);
+  pthread_mutex_trylock(&_backing->rw_mutex);
   _backing->version = _current_version;
   _backing->size = size;
   memcpy(_backing->data, data, size);
@@ -60,7 +60,7 @@ void splat::poll()
 {
   assert(_mode == sub);
   
-  pthread_mutex_lock(&_backing->rw_mutex);
+  pthread_mutex_trylock(&_backing->rw_mutex);
   _current_version = _backing->version;
   
   auto reader = bson_reader_new_from_data(_backing->data, _backing->size);
@@ -73,28 +73,30 @@ void splat::poll()
 
 bool splat::update_available() const
 {
+  assert(_mode == sub);
   return _backing->version != _current_version && _backing->size;
 }
 
 void_result splat::create(const size_t max_size)
 {
-  void_result ret = map(max_size, PROT_WRITE);
+  void_result ret = map(max_size, PROT_READ | PROT_WRITE);
   if(!ret) return ret;
   memset(reinterpret_cast<uint8_t *>(_backing), 0, _size);
-  _mode = pub;
   pthread_mutexattr_t attr;
   pthread_mutexattr_init(&attr);
   pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
   pthread_mutex_init(&_backing->rw_mutex, &attr);
   pthread_mutexattr_destroy(&attr);
+  
   _backing->size = 0;
   _backing->version = 0U;
+  _mode = pub;
   return success();
 }
 
 void_result splat::connect(const size_t defined_max_size)
 {
-  void_result ret = map(defined_max_size, PROT_READ);
+  void_result ret = map(defined_max_size, PROT_READ | PROT_WRITE);
   if(ret) _mode = sub;
   return ret;
 }
@@ -121,13 +123,15 @@ void_result splat::map(const size_t size, const int mode)
   
   if(_fd < 0) return failure("Failed to create " + file.str());
   ftruncate(_fd, size);
-  _backing = reinterpret_cast<splat_data *>(mmap(0, size, mode, MAP_SHARED, _fd, 0));
+  _backing = reinterpret_cast<splat_data *>(mmap(0, size, mode, MAP_FILE | MAP_SHARED, _fd, 0));
+  
   if(reinterpret_cast<void *>(_backing) == MAP_FAILED)
   {
     ::close(_fd);
     _fd = -1;
     return failure("Failed to memory map file " + filename);
   }
+  mlock(reinterpret_cast<void *>(_backing), size);
   
   _size = size;
   
@@ -139,6 +143,7 @@ void_result splat::unmap()
   if(_fd < 0) return failure("fd is invalid");
   assert(reinterpret_cast<void *>(_backing) != MAP_FAILED && _backing != 0);
   
+  munlock(reinterpret_cast<void *>(_backing), _size);
   if(munmap(reinterpret_cast<void *>(_backing), _size) < 0)
   {
     return failure("Memory un-mapping failed!");

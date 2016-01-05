@@ -18,6 +18,11 @@ static void print_bson(const bson_t *const msg)
   bson_free (str);
 }
 
+tcp_thread::buffer::buffer()
+  : reject_out_count(0U)
+{
+}
+
 tcp_thread::tcp_thread()
   : _exit(false)
   , _sleep(10000U)
@@ -165,7 +170,7 @@ void tcp_thread::run()
 
 void tcp_thread::update_sleep(const uint16_t new_packet_count)
 {
-  const static uint16_t max_sleep = 0xFFFFU;
+  const static uint16_t max_sleep = 20000U;
   const static uint16_t min_sleep = 2000U;
   const uint16_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
   _sleep = std::max(temporal_packet_distance, min_sleep) * 0.1 + _sleep * 0.9;

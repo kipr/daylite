@@ -8,20 +8,12 @@
 
 #include "daylite/node.hpp"
 #include "daylite/spinner.hpp"
+#include "daylite/util.hpp"
 
 #include "string_msg.hpp"
 
 using namespace daylite;
 using namespace std;
-
-void print_bson(const bson_t *const msg)
-{
-  size_t len;
-  char *str;
-  str = bson_as_json (msg, &len);
-  cout << str << endl;
-  bson_free (str);
-}
 
 int main(int argc, char *argv[])
 {
@@ -48,13 +40,14 @@ int main(int argc, char *argv[])
   pub->set_firehose(true);
   
   
-  for(uint32_t i = 0;; ++i)
+  uint32_t i = 0;
+  while(!should_exit())
   {
     string_msg msg;
-    msg.value = "test" + to_string(i);
+    msg.value = "test" + to_string(i++);
     pub->publish(bson(msg.bind()));
     spinner::spin_once();
-    // usleep(1000U);
+    usleep(1000U);
   }
   
   return 0;
