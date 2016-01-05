@@ -37,12 +37,16 @@ namespace daylite
       std::unordered_set<std::string> in_firehose;
       std::deque<packet> out;
       std::unordered_set<std::string> out_firehose;
+      uint32_t reject_out_count;
     };
 
     void run();
+    void update_sleep(const uint32_t new_packet_count);
+    
     std::mutex _mut;
     std::unordered_map<transport *, std::unique_ptr<buffer>> _buffers;
     std::thread _thread;
+    uint32_t _sleep;
     bool _exit;
   };
 }

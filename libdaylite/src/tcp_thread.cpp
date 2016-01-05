@@ -20,6 +20,7 @@ static void print_bson(const bson_t *const msg)
 
 tcp_thread::tcp_thread()
   : _exit(false)
+  , _sleep(10000U)
 {
   _thread = thread(bind(&tcp_thread::run, this));
 }
@@ -81,7 +82,11 @@ void_result tcp_thread::send(transport *const socket, const packet &p)
   if(p.meta().droppable)
   {
     const auto &name = p.topic().name();
-    if(buff->out_firehose.find(name) != buff->out_firehose.end()) return success();
+    if(buff->out_firehose.find(name) != buff->out_firehose.end())
+    {
+      ++buff->reject_out_count;
+      return success();
+    }
     buff->out_firehose.insert(name); 
   }
   buff->out.push_back(p);
@@ -97,9 +102,13 @@ void tcp_thread::exit()
 
 void tcp_thread::run()
 {
+  uint32_t update_sleep_it = 0;
   while(!_exit)
   {
     _mut.lock();
+    uint32_t out_packet_count = 0;
+    uint32_t in_packet_count = 0;
+    
     for(auto it = _buffers.begin(); it != _buffers.end(); ++it)
     {
       if(!it->second) continue;
@@ -113,13 +122,12 @@ void tcp_thread::run()
         lock_guard<mutex> lock(buff->mut);
         for(const packet &k : buff->out)
         {
-          if(!out.unwrap()->write(k))
-          {
-            cout << "Failed to write packet!" << endl;
-          }
+          if(!out.unwrap()->write(k)) cout << "Failed to write packet!" << endl;
         }
         
+        out_packet_count = buff->out.size() + buff->reject_out_count;
         buff->out.clear();
+        buff->reject_out_count = 0;
         buff->out_firehose.clear();
       }
       
@@ -147,9 +155,22 @@ void tcp_thread::run()
           buff->in.push_back(p_val);
         }
       }
+      in_packet_count = buff->in.size();
     }
     _mut.unlock();
     
-    usleep(1000U);
+    update_sleep(std::max(in_packet_count, out_packet_count));
   }
+}
+
+void tcp_thread::update_sleep(const uint32_t new_packet_count)
+{
+  
+  const static uint32_t max_sleep = 20000U;
+  const static uint32_t min_sleep = 2000U;
+  const uint32_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
+  _sleep = std::max(temporal_packet_distance, min_sleep);
+  usleep(_sleep);
+  // static uint8_t i = 0;
+  // if(!i++) cout << "Sleep time: " << _sleep << "(" << new_packet_count << ")" << endl;
 }
