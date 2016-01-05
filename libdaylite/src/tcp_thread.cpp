@@ -166,11 +166,9 @@ void tcp_thread::run()
 void tcp_thread::update_sleep(const uint32_t new_packet_count)
 {
   
-  const static uint32_t max_sleep = 20000U;
+  const static uint32_t max_sleep = 100000U;
   const static uint32_t min_sleep = 2000U;
   const uint32_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
   _sleep = std::max(temporal_packet_distance, min_sleep);
   usleep(_sleep);
-  // static uint8_t i = 0;
-  // if(!i++) cout << "Sleep time: " << _sleep << "(" << new_packet_count << ")" << endl;
 }

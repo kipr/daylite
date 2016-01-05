@@ -27,9 +27,9 @@ namespace daylite
     void_result publish(const bson &msg);
     void_result publish(packet p);
     
-    bool firehose() const { return _firehose; }
-    void set_firehose(const bool firehose) { _firehose = firehose; }
-
+    inline bool firehose() const { return _firehose; }
+    inline void set_firehose(const bool firehose) { _firehose = firehose; }
+    
     inline class daylite::topic topic() const { return _t; }
 
   private:
