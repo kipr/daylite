@@ -27,6 +27,8 @@ namespace daylite
     void_result send(transport *const socket, const packet &p);
 
     void exit();
+    
+    uint32_t sleep_duration() const { return _sleep; }
 
   private:
     struct buffer

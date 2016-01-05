@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   for(;;)
   {
     spinner::spin_once();
-    usleep(1000);
+    usleep(me->thread_sleep_duration());
   }
   
   return 0;

@@ -29,6 +29,8 @@ namespace daylite
     virtual std::shared_ptr<publisher> advertise(const std::string &topic) = 0;
     virtual std::shared_ptr<subscriber> subscribe(const std::string &topic, subscriber::subscriber_callback_t callback,
       void *usr_arg = nullptr) = 0;
+      
+    virtual uint32_t thread_sleep_duration() const = 0;
   };
 }
 

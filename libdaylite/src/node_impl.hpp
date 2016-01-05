@@ -66,6 +66,8 @@ namespace daylite
 
     inline const network_time &time() const { return _network_time; }
     void update_time();
+    
+    uint32_t thread_sleep_duration() const { return _thread.sleep_duration(); }
 
   private:
     void_result start_gateway_service(const std::string &local_host, uint16_t local_port);
