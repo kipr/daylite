@@ -49,7 +49,7 @@ void splat::push(const packet &latest)
   const uint8_t *data = bson_get_data(packed);
   ++_current_version;
   
-  pthread_mutex_trylock(&_backing->rw_mutex);
+  pthread_mutex_lock(&_backing->rw_mutex);
   _backing->version = _current_version;
   _backing->size = size;
   memcpy(_backing->data, data, size);
