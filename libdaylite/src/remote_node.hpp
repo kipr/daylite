@@ -32,6 +32,8 @@ namespace daylite
     inline transport *link() const { return _link.get(); }
     inline const std::set<uint32_t> &associated_ids() const { return _associated_ids; }
     inline enum mode mode() const { return _mode; }
+    
+    void shutdown();
 
   private:
     enum mode _mode;

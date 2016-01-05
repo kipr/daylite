@@ -99,12 +99,19 @@ void_result node_impl::gateway(const std::string &host, const uint16_t port)
 
 void_result node_impl::stop()
 {
-  cout << "Stopping node.." << endl;
   stop_gateway_service();
   leave_daylite();
   _dave->clear();
   for(const auto &splat : _splats) delete splat.second;
   for(const auto &splat : _remote_splats) delete splat.second;
+  for(auto a : _active_publishers) a->set_husk();
+  for(auto a : _active_subscribers) a->set_husk();
+  
+  for(const auto &a : _remotes)
+  {
+    a->shutdown();
+  }
+  _remotes.clear();
   return success();
 } 
 
@@ -161,7 +168,6 @@ void_result node_impl::join_daylite(const std::string &host, uint16_t port, bool
 
 void_result node_impl::leave_daylite()
 {
-  _remotes.clear();
   return success();
 }
 
@@ -311,7 +317,6 @@ void node_impl::server_connection(tcp_socket *const socket)
 
 void node_impl::server_disconnection(tcp_socket *const socket)
 {
-
   for(auto it = _remotes.begin(); it != _remotes.end();)
   {
     if(dynamic_cast<tcp_transport *>((*it)->link())->socket() != socket)

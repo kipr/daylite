@@ -33,6 +33,11 @@ namespace daylite
     inline void set_firehose(const bool firehose) { _firehose = firehose; }
     
     inline class daylite::topic topic() const { return _t; }
+    
+    // This is called by the parent node_impl
+    // if it goes out of scope before its
+    // child classes
+    void set_husk();
 
   private:
     node_impl *_parent;
@@ -40,6 +45,8 @@ namespace daylite
     std::shared_ptr<mailman> _dave;
     std::shared_ptr<mailbox> _mailbox;
     bool _firehose;
+    
+    bool _husk;
   };
 }
 

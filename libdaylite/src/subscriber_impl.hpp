@@ -27,11 +27,16 @@ namespace daylite
 
     inline class daylite::topic topic() const { return _t; }
 
+    // See same method in publisher_impl for more info
+    void set_husk();
+
   private:
     node_impl *_parent;
     daylite::topic _t;
     std::shared_ptr<mailman> _dave;
     std::shared_ptr<mailbox> _mailbox;
+    
+    bool _husk;
   };
 }
 

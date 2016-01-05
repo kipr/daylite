@@ -4,6 +4,7 @@
 #define LISTEN_QUEUE_SIZE (10U)
 
 using namespace daylite;
+using namespace std;
 
 tcp_server::tcp_server(const socket_address &address)
   : _address(address)
@@ -77,7 +78,7 @@ void_result tcp_server::spin_update()
 
     // Recv will return no error and ret == 0 when a client disconnects
     // if there's still a connection but no data, it will return the EAGAIN error.
-    if(!ret || ret.unwrap() > 0) { ++it; continue; }
+    if(client->is_open() && (!ret || ret.unwrap() > 0)) { ++it; continue; }
 
     for(auto listener : _listeners) listener->server_disconnection(client);
 

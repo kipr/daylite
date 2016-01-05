@@ -119,6 +119,7 @@ void tcp_thread::run()
       if(!it->second) continue;
       
       auto l = it->first;
+      
       auto &buff = it->second;
       
       auto out = l->output();

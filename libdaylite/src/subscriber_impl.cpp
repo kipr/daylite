@@ -10,6 +10,7 @@ subscriber_impl::subscriber_impl(node_impl *const parent, const daylite::topic &
   , _t(t)
   , _dave(dave)
   , _mailbox(make_shared<mailbox>(t))
+  , _husk(false)
 {
   _parent->register_subscriber(this);
   _dave->register_mailbox(_mailbox);
@@ -22,6 +23,17 @@ subscriber_impl::subscriber_impl(node_impl *const parent, const daylite::topic &
 
 subscriber_impl::~subscriber_impl()
 {
+  if(_husk) return;
   _parent->unregister_subscriber(this);
   _dave->unregister_mailbox(_mailbox);
+}
+
+
+void subscriber_impl::set_husk()
+{
+  _dave->unregister_mailbox(_mailbox);
+  _dave.reset();
+  _mailbox.reset();
+  _parent = 0;
+  _husk = true;
 }

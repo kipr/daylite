@@ -21,7 +21,7 @@ remote_node::remote_node(node_impl *const parent, unique_ptr<transport> link, co
 
 remote_node::~remote_node()
 {
-  _parent->_thread.remove_socket(_link.get());
+  shutdown();
 }
 
 void_result remote_node::send(const packet &p)
@@ -89,4 +89,15 @@ void_result remote_node::spin_update()
     place_outgoing_mail(p);
   }
   return success();
+}
+
+void remote_node::shutdown()
+{
+  if(!_link) return;
+  auto ret = _parent->_thread.remove_socket(_link.get());
+  if(!ret)
+  {
+    cout << "Warning: Failed to shutdown remote_node: " << ret.message() << endl;
+  }
+  _link.reset();
 }

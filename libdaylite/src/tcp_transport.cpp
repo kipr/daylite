@@ -27,6 +27,7 @@ tcp_transport::tcp_transport(tcp_socket *const socket, const bool owns)
 tcp_transport::~tcp_transport()
 {
   close();
+  _socket = 0;
 }
 
 void_result tcp_transport::open()
@@ -61,7 +62,7 @@ void_result tcp_transport::close()
   
   if(_socket) _socket->close();
   if(_owns) delete _socket;
-  _socket = 0;
+  
   
   return success();
 }
