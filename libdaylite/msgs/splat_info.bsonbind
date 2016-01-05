@@ -1,0 +1,4 @@
+%package daylite
+uint32 node_id!
+string topic!
+uint32 size!

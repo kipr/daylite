@@ -27,6 +27,9 @@ namespace daylite
     inline const struct meta &meta() const { return _meta; }
     inline class topic topic() const { return daylite::topic(_meta.topic); }
     inline const struct network_time &stamp() const { return _meta.stamp; }
+    
+    inline bool local_only() const { return _local_only; }
+    inline void set_local_only(const bool local_only) { _local_only = local_only; }
 
     inline bool null() const { return _null; }
 
@@ -40,6 +43,7 @@ namespace daylite
     struct meta _meta;
     bson _msg;
     bson _packed;
+    bool _local_only;
   };
 }
 

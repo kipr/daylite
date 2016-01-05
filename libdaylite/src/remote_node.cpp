@@ -26,6 +26,9 @@ remote_node::~remote_node()
 
 void_result remote_node::send(const packet &p)
 {
+  // Do not send packets marked as local_only
+  if(p.local_only()) return success();
+  
   // Check to see if anyone is actually listening
   // for this on this branch of the network.
   auto it = _parent->_subscription_count.find(p.meta().topic);
@@ -37,7 +40,20 @@ void_result remote_node::send(const packet &p)
   mod.meta().id = _parent->id();
   mod.build();
   
-  return _parent->_thread.send(_link.get(), mod);
+  bool should_send = true;
+  
+#ifdef SPLAT_ENABLED
+  bool droppable = p.meta().droppable;
+  if(droppable) _parent->push_splat(mod);
+  // FIXME: This is not the correct condition.
+  // We still want to send to *truly* remote clients
+  // over TCP, but there is currently no way to
+  // identify unique systems on the network to
+  // generate disconnected splat neighborhoods.
+  should_send = !droppable;
+#endif
+  
+  return should_send ? _parent->_thread.send(_link.get(), mod) : success();
 }
 
 void_result remote_node::spin_update()
@@ -61,6 +77,8 @@ void_result remote_node::spin_update()
 
     place_outgoing_mail(p);
   }
-
+#ifdef SPLAT_ENABLED
+  _parent->update_splats();
+#endif
   return success();
 }

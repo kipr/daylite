@@ -103,7 +103,12 @@ namespace daylite
     
     uint32_t _id;
     std::unordered_map<decltype(node_info::id), node_info> _latest_info;
+    void tally(const node_info &info);
+    void untally(const node_info &info);
+    
     std::unordered_map<std::string, uint32_t> _subscription_count;
+    std::unordered_map<std::string, uint32_t> _local_subscription_count;
+    std::unordered_map<std::string, uint32_t> _splat_count;
 
     network_time _network_time;
     timeval _last_time;
@@ -112,6 +117,15 @@ namespace daylite
     network_time _keepalive;
     
     tcp_thread _thread;
+    
+#ifdef SPLAT_ENABLED
+    void_result register_splat(const splat_info &info);
+    void_result unregister_splat(const splat_info &info);
+    void push_splat(const packet &p);
+    void update_splats();
+    bool is_only_splat(const std::string &topic);
+    std::unordered_map<std::string, unique_ptr<splat>> _splat;
+#endif
   };
 }
 

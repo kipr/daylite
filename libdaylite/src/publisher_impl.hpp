@@ -13,6 +13,8 @@
 #include "mailbox.hpp"
 #include "mailman.hpp"
 
+#include "splat.hpp"
+
 namespace daylite
 {
   class node_impl;

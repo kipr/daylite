@@ -61,16 +61,10 @@ node_impl::node_impl(const string &name, const option<socket_address> &us)
       if(info.id == id()) return success();
 
       auto lit = _latest_info.find(info.id);
-      if(lit != _latest_info.end())
-      {
-        for(const auto &topic : _latest_info[info.id].in_topics) --_subscription_count[topic];
-      }
-
+      if(lit != _latest_info.end()) untally(lit->second);
+      
       _latest_info[info.id] = info;
-      for(const auto &topic : _latest_info[info.id].in_topics)
-      {
-        ++_subscription_count[topic];
-      }
+      tally(info);
       
       return success();
     }))
@@ -193,6 +187,7 @@ shared_ptr<subscriber> node_impl::subscribe(const std::string &t, subscriber::su
 void node_impl::register_subscriber(subscriber_impl *const subscriber)
 {
   unregister_subscriber(subscriber);
+  ++_local_subscription_count[subscriber->topic().name()];
   _active_subscribers.push_back(subscriber);
   send_info(false);
 }
@@ -206,9 +201,14 @@ void node_impl::register_publisher(publisher_impl *const publisher)
 
 void node_impl::unregister_subscriber(subscriber_impl *const subscriber)
 {
+  
   for(auto it = _active_subscribers.begin(); it != _active_subscribers.end();)
   {
-    if(*it == subscriber) it = _active_subscribers.erase(it);
+    if(*it == subscriber)
+    {
+      it = _active_subscribers.erase(it);
+      --_local_subscription_count[subscriber->topic().name()];
+    }
     else ++it;
   }
 }
@@ -321,6 +321,8 @@ void node_impl::server_disconnection(tcp_socket *const socket)
         continue;
       }
       cout << "Setting node " << id << " to dead" << endl;
+      untally(lit->second);
+      
       lit->second.alive = false;
       lit->second.out_topics.clear();
       lit->second.in_topics.clear();
@@ -340,3 +342,73 @@ void_result node_impl::spin_update()
   }
   return success();
 }
+
+void node_impl::tally(const node_info &info)
+{
+  for(const auto &topic : info.in_topics) ++_subscription_count[topic];
+  for(const auto &splat : info.splats) ++_splat_count[splat.topic];
+}
+
+void node_impl::untally(const node_info &info)
+{
+  for(const auto &topic : info.in_topics) --_subscription_count[topic];
+  for(const auto &splat : info.splats) --_splat_count[splat.topic];
+}
+
+#ifdef SPLAT_ENABLED
+void_result node_impl::register_splat(const splat_info &info)
+{
+  auto it = _splats.find(info.topic);
+  assert(it == _splats.end());
+  unique_ptr<splat> splat_ptr(new splat(info.id, info.topic));
+  _splats.insert({info.topic, splat_ptr});
+  return splat_ptr->connect(info.size);
+}
+
+void_result node_impl::unregister_splat(const splat_info &info)
+{
+  auto it = _splats.find(info.topic);
+  if(it == _splats.end()) return failure("Splat not found");
+  it->second->close();
+  _splats.erase(it);
+  return sucess();
+}
+
+void_result node_impl::push_splat(const packet &p)
+{
+  auto it = _splats.find(p.meta().topic);
+  if(it == _splats.end())
+  {
+    unique_ptr<splat> splat_ptr(new splat(_id, p.meta().topic));
+    it = _splats.insert({p.meta().topic, splat_ptr}).first;
+  }
+  auto splat = it->second;
+  if(!splat->is_on())
+  {
+    auto ret = splat->create(p.packed()->len << 1);
+    if(!ret) return ret;
+  }
+  return success();
+}
+
+void node_impl::update_splats()
+{
+  for(const auto &p : _splats)
+  {
+    const auto &splat = p.second;
+    if(!splat->update_avilable()) continue;
+    auto it = _local_subscription_count.find(splat.topic());
+    if(it == _local_subscription_count.end()) continue;
+    splat->poll();
+    _mailbox->place_outgoing_mail(splat->latest());
+  }
+}
+
+bool node_impl::is_only_splat(const std::string &topic)
+{
+  const auto &subit = _subscription_count.find(topic);
+  const auto &splatit = _splat_count.find(topic);
+  return subit != _subscription_count.end() && splatit != _splat_it.end() && subit->second == splatit->second;
+}
+
+#endif

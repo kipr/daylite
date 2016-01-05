@@ -52,6 +52,7 @@ packet::packet(const class topic &t, const network_time &stamp, const bson &raw_
   : _null(false)
   , _msg(raw_msg)
   , _packed()
+  , _local_only(false)
 {
   _meta.topic = t.name();
   _meta.stamp = stamp;
@@ -64,6 +65,7 @@ packet::packet(const packet &rhs)
   , _meta(rhs._meta)
   , _msg(rhs._msg)
   , _packed(rhs._packed)
+  , _local_only(rhs._local_only)
 {
 }
 
@@ -72,6 +74,7 @@ packet::packet(packet &&rhs)
   , _meta(move(rhs._meta))
   , _msg(rhs._msg)
   , _packed(rhs._packed)
+  , _local_only(rhs._local_only)
 {
   rhs._msg = bson();
   rhs._packed = bson();
@@ -101,6 +104,8 @@ packet &packet::operator =(packet &&rhs)
   _meta = move(rhs._meta);
   _msg = move(rhs._msg);
   _packed = move(rhs._packed);
+  _local_only = rhs._local_only;
+  
   return *this;
 }
 
@@ -110,6 +115,7 @@ packet &packet::operator =(const packet &rhs)
   _meta = rhs._meta;
   _msg = rhs._msg;
   _packed = rhs._packed;
+  _local_only = rhs._local_only;
 
   return *this;
 }
