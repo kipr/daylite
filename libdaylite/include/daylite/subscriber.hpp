@@ -14,6 +14,9 @@ namespace daylite
   {
   public:
     typedef std::function<void (const bson &, void *)> subscriber_callback_t;
+    
+    virtual void set_send_packed(const bool packed) = 0;
+    virtual bool send_packed() const = 0;
   };
 }
 

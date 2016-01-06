@@ -11,12 +11,13 @@ subscriber_impl::subscriber_impl(node_impl *const parent, const daylite::topic &
   , _dave(dave)
   , _mailbox(make_shared<mailbox>(t))
   , _husk(false)
+  , _send_packed(false)
 {
   _parent->register_subscriber(this);
   _dave->register_mailbox(_mailbox);
-  _mailbox->set_incoming_mail_callback([callback, usr_arg](const packet &p)
+  _mailbox->set_incoming_mail_callback([callback, usr_arg, this](const packet &p)
   {
-    if(callback) callback(p.msg(), usr_arg);
+    if(callback) callback(_send_packed ? p.packed() : p.msg(), usr_arg);
     return success();
   });
 }

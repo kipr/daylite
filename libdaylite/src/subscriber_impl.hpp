@@ -29,6 +29,9 @@ namespace daylite
 
     // See same method in publisher_impl for more info
     void set_husk();
+    
+    void set_send_packed(const bool packed) { _send_packed = packed; }
+    bool send_packed() const { return _send_packed; }
 
   private:
     node_impl *_parent;
@@ -37,6 +40,7 @@ namespace daylite
     std::shared_ptr<mailbox> _mailbox;
     
     bool _husk;
+    bool _send_packed;
   };
 }
 
