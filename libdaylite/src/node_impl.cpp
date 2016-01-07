@@ -104,8 +104,10 @@ void_result node_impl::stop()
   stop_gateway_service();
   leave_daylite();
   _dave->clear();
+#ifdef SPLAT_ENABLED
   for(const auto &splat : _splats) delete splat.second;
   for(const auto &splat : _remote_splats) delete splat.second;
+#endif
   for(auto a : _active_publishers) a->set_husk();
   for(auto a : _active_subscribers) a->set_husk();
   
@@ -244,8 +246,10 @@ struct node_info node_impl::info() const
 
   for(auto s : _active_subscribers) ret.in_topics.push_back(s->topic().name());
   for(auto s : _active_publishers) ret.out_topics.push_back(s->topic().name());
+#ifdef SPLAT_ENABLED
   splat_info info;
   info.node_id = _id;
+
   for(const auto &s : _splats)
   {
     const auto &splat = s.second;
@@ -253,6 +257,7 @@ struct node_info node_impl::info() const
     info.topic = splat->topic();
     ret.splats.push_back(info);
   }
+#endif
   ret.alive = true;
   return ret;
 }
@@ -373,7 +378,9 @@ void node_impl::tally(const node_info &info)
   for(const auto &splat : info.splats)
   {
     ++_splat_count[splat.topic];
+#ifdef SPLAT_ENABLED
     register_splat(splat);
+#endif
   }
 }
 
@@ -382,7 +389,9 @@ void node_impl::untally(const node_info &info)
   for(const auto &topic : info.in_topics) --_subscription_count[topic];
   for(const auto &splat : info.splats)
   {
+#ifdef SPLAT_ENABLED
     unregister_splat(splat);
+#endif
     --_splat_count[splat.topic];
   }
 }

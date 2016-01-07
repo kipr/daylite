@@ -56,7 +56,7 @@ void splat::push(const packet &latest)
   {
     if(!i++) cout << "BUSY!!" << endl;
   }
-  if(!i++) cout << "Locked" << endl;
+  //if(!i++) cout << "Locked" << endl;
   _backing->version = _current_version;
   _backing->size = size;
   memcpy(_backing->data, data, size);
@@ -71,7 +71,7 @@ void splat::poll()
   {
     if(!i++) cout << "BUSY!!" << endl;
   }
-  if(!i++) cout << "Locked" << endl;
+  //if(!i++) cout << "Locked" << endl;
   _current_version = _backing->version;
   
   auto reader = bson_reader_new_from_data(_backing->data, _backing->size);
@@ -167,6 +167,7 @@ void_result splat::unmap()
 
 void splat::init_mut()
 {
+  cout << "INITIALIZATING MUTEX!!!" << endl;
   pthread_mutexattr_t attr;
   pthread_mutexattr_init(&attr);
   pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);

@@ -16,7 +16,7 @@ endif()
 find_package(BsonBind REQUIRED)
 find_package(BSON REQUIRED)
 
-add_definitions(-DSPLAT_ENABLED)
+# add_definitions(-DSPLAT_ENABLED)
 
 add_bson_binds(BSON_BIND_INCLUDES ${LIBDAYLITE_MSGS})
 list(APPEND LIBDAYLITE_INCLUDES ${BSON_BIND_INCLUDES})
