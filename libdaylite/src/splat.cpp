@@ -67,8 +67,11 @@ void splat::poll()
 {
   assert(_mode == sub);
   
-  pthread_mutex_lock(&_backing->rw_mutex);
-  
+  while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
+  {
+    cout << "BUSY!!" << endl;
+  }
+  cout << "Locked" << endl;
   _current_version = _backing->version;
   
   auto reader = bson_reader_new_from_data(_backing->data, _backing->size);
