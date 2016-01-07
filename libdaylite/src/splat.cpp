@@ -51,12 +51,12 @@ void splat::push(const packet &latest)
   assert(size < _size - sizeof(splat_data));
   const uint8_t *data = bson_get_data(packed);
   ++_current_version;
-  
+  static uint8_t i = 0;
   while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
   {
     cout << "BUSY!!" << endl;
   }
-  cout << "Locked" << endl;
+  if(!i++) cout << "Locked" << endl;
   _backing->version = _current_version;
   _backing->size = size;
   memcpy(_backing->data, data, size);
@@ -66,12 +66,12 @@ void splat::push(const packet &latest)
 void splat::poll()
 {
   assert(_mode == sub);
-  
+  static uint8_t i = 0;
   while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
   {
     cout << "BUSY!!" << endl;
   }
-  cout << "Locked" << endl;
+  if(!i++) cout << "Locked" << endl;
   _current_version = _backing->version;
   
   auto reader = bson_reader_new_from_data(_backing->data, _backing->size);
