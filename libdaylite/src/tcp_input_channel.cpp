@@ -69,12 +69,13 @@ result<packet> tcp_input_channel::read()
     bson_reader_destroy(reader);
     return failure<packet>("Could not create the BSON reader");
   }
-
-  packet p(bson(bson_reader_read(reader, nullptr)));
+  const bson_t *const b = bson_reader_read(reader, nullptr);
+  packet p;
+  if(b) p = packet(bson(b));
   bson_reader_destroy(reader);
   delete[] t;
 
-  return success(p);
+  return p.null() ? failure<packet>("Failed to decode packet") : success(p);
 }
 
 bool tcp_input_channel::is_available() const
