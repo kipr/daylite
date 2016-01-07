@@ -24,14 +24,14 @@ subscriber_impl::subscriber_impl(node_impl *const parent, const daylite::topic &
 
 subscriber_impl::~subscriber_impl()
 {
-  if(_husk) return;
-  _parent->unregister_subscriber(this);
-  _dave->unregister_mailbox(_mailbox);
+  set_husk();
 }
 
 
 void subscriber_impl::set_husk()
 {
+  if(_husk) return;
+  _parent->unregister_subscriber(this);
   _dave->unregister_mailbox(_mailbox);
   _dave.reset();
   _mailbox.reset();
