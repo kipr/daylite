@@ -54,7 +54,7 @@ void splat::push(const packet &latest)
   static uint8_t i = 0;
   while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
   {
-    cout << "BUSY!!" << endl;
+    if(!i++) cout << "BUSY!!" << endl;
   }
   if(!i++) cout << "Locked" << endl;
   _backing->version = _current_version;
@@ -69,7 +69,7 @@ void splat::poll()
   static uint8_t i = 0;
   while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
   {
-    cout << "BUSY!!" << endl;
+    if(!i++) cout << "BUSY!!" << endl;
   }
   if(!i++) cout << "Locked" << endl;
   _current_version = _backing->version;
