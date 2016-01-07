@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <pthread.h>
 #include <errno.h>
+#include <iostream>
 
 using namespace daylite;
 using namespace std;
@@ -51,7 +52,11 @@ void splat::push(const packet &latest)
   const uint8_t *data = bson_get_data(packed);
   ++_current_version;
   
-  pthread_mutex_lock(&_backing->rw_mutex);
+  while(pthread_mutex_trylock(&_backing->rw_mutex) == EBUSY)
+  {
+    cout << "BUSY!!" << endl;
+  }
+  cout << "Locked" << endl;
   _backing->version = _current_version;
   _backing->size = size;
   memcpy(_backing->data, data, size);
