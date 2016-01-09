@@ -27,57 +27,45 @@ result<packet> tcp_input_channel::read()
   // Read the size of the data to come (max 2^32 - 1)
   if(_buffer.size() < sizeof(uint32_t))
   {
-    if(!_buffer.can_grow()) return failure<packet>("Backlog too large", EAGAIN);
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
     if(!ret) return failure<packet>(ret.message(), ret.code());
-    const uint32_t size = ret.unwrap();
-    _buffer.write(tmp, size);
+    _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
 
   // got something but not all
   if(_buffer.size() < sizeof(uint32_t)) return failure<packet>("Ran out of time", EAGAIN);
 
-  // Keep reading until we reach the requisite length
+  // Keep reading until time is up or we reach the requisite length
   uint32_t target_size = *reinterpret_cast<uint32_t *>(_buffer.data());
-  while(_buffer.size() < target_size)
+  if(_buffer.size() < target_size)
   {
-    if(!_buffer.can_grow()) return failure<packet>("Backlog too large", EAGAIN);
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
-    if(ret.code() == EAGAIN) break;
     if(!ret) return failure<packet>(ret.message(), ret.code());
-    const uint32_t size = ret.unwrap();
-    _buffer.write(tmp, size);
+    _buffer.insert(_buffer.end(), tmp, tmp + ret.unwrap());
   }
 
   if(_buffer.size() < target_size) return failure<packet>("Ran out of time", EAGAIN);
 
   // Got all of the packet. Chop it off of the buffer and return it.
-  bson_reader_t *reader = 0;
-  uint8_t *t = 0;
-  if(_buffer.contiguous_read_possible(target_size))
-  {
-    reader = bson_reader_new_from_data(_buffer.data(), target_size);
-    _buffer.discard(target_size);
-  }
-  else
-  {
-    t = new uint8_t[target_size];
-    _buffer.read(t, target_size);
-    reader = bson_reader_new_from_data(t, target_size);
-  }
-  
+  bson_reader_t *reader;
+  const bson_t *doc;
+
+  reader = bson_reader_new_from_data(_buffer.data(), target_size);
   if(!reader)
   {
     bson_reader_destroy(reader);
+    _buffer.erase(_buffer.begin(), _buffer.begin() + target_size);
     return failure<packet>("Could not create the BSON reader");
   }
-  const bson_t *const b = bson_reader_read(reader, nullptr);
-  packet p;
-  if(b) p = packet(bson(b));
-  bson_reader_destroy(reader);
-  delete[] t;
 
-  return p.null() ? failure<packet>("Failed to decode packet") : success(p);
+  doc = bson_reader_read(reader, nullptr);
+
+  packet p(doc);
+
+  _buffer.erase(_buffer.begin(), _buffer.begin() + target_size);
+  bson_reader_destroy(reader);
+
+  return success(p);
 }
 
 bool tcp_input_channel::is_available() const

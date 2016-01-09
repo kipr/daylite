@@ -19,7 +19,7 @@ namespace daylite
     
   private:
     tcp_socket *_socket;
-    dynamic_circular_buffer _buffer;
+    std::vector<uint8_t> _buffer;
   };
 }
 
