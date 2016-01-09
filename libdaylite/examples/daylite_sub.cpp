@@ -48,7 +48,9 @@ int main(int argc, char *argv[])
   register_signal_handlers();
   while(!should_exit())
   {
-    usleep(1000U);
+    usleep(1000000U); // 1 s
+    spinner::spin_once();
+    usleep(60000U); // 60 ms
     spinner::spin_once();
   }
   

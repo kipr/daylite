@@ -47,8 +47,9 @@ int main(int argc, char *argv[])
     string_msg msg;
     msg.value = "test" + to_string(i++);
     pub->publish(bson(msg.bind()));
+    std::cout << "published test" << i-1 << std::endl;
     spinner::spin_once();
-    usleep(1000U);
+    usleep(100000U); // 100 ms
   }
   
   return 0;
