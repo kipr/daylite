@@ -22,7 +22,10 @@ dynamic_circular_buffer::~dynamic_circular_buffer()
 
 void dynamic_circular_buffer::write(const uint8_t *const data, const size_t count)
 {
-  if(count + _virtual_size > _physical_size) resize_backing((count + _virtual_size) << 1);
+  if(count + _virtual_size > _physical_size)
+  {
+    resize_backing((count + _virtual_size) << 1);
+  }
   
   const size_t insertion_point = (_head + _virtual_size) % _physical_size;
   
@@ -84,6 +87,8 @@ void dynamic_circular_buffer::clear()
 
 void dynamic_circular_buffer::resize_backing(const uint32_t new_size)
 {
+  assert(can_grow());
+  
   if(new_size > 1000000U)
   {
     cout << "WARNING: Dynamic circular buffer has grown to " << new_size << endl;

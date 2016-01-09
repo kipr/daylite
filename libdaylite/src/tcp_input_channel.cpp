@@ -27,6 +27,7 @@ result<packet> tcp_input_channel::read()
   // Read the size of the data to come (max 2^32 - 1)
   if(_buffer.size() < sizeof(uint32_t))
   {
+    if(!_buffer.can_grow()) return failure<packet>("Backlog too large", EAGAIN);
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
     if(!ret) return failure<packet>(ret.message(), ret.code());
     const uint32_t size = ret.unwrap();
@@ -40,6 +41,7 @@ result<packet> tcp_input_channel::read()
   uint32_t target_size = *reinterpret_cast<uint32_t *>(_buffer.data());
   while(_buffer.size() < target_size)
   {
+    if(!_buffer.can_grow()) return failure<packet>("Backlog too large", EAGAIN);
     result<size_t> ret = _socket->recv(tmp, sizeof(tmp));
     if(ret.code() == EAGAIN) break;
     if(!ret) return failure<packet>(ret.message(), ret.code());

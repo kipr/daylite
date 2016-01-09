@@ -64,7 +64,7 @@ packet tcp_thread::next(transport *const socket)
   
   auto ret = buff->in.front();
   buff->in.pop_front();
-  
+    
   if(ret.meta().droppable)
   {
     const auto &name = ret.topic().name();
@@ -155,6 +155,7 @@ void tcp_thread::run()
           lock_guard<mutex> lock(buff->mut);
           if(p_val.meta().droppable)
           {
+            
             if(buff->in_firehose.find(topic) != buff->in_firehose.end()) continue;
             buff->in_firehose.insert(topic);
           }

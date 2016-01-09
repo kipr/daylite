@@ -30,6 +30,8 @@ namespace daylite
     }
     inline uint8_t *data() const { return _backing + _head; }
     
+    const bool can_grow() const { return _physical_size < 1000000; }
+    
   private:
     void resize_backing(const uint32_t new_size);
     
