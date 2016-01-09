@@ -3,6 +3,7 @@
 
 namespace daylite
 {
+  void register_signal_handlers();
   bool should_exit();
 }
 

@@ -84,6 +84,10 @@ void dynamic_circular_buffer::clear()
 
 void dynamic_circular_buffer::resize_backing(const uint32_t new_size)
 {
+  if(new_size > 1000000U)
+  {
+    cout << "WARNING: Dynamic circular buffer has grown to " << new_size << endl;
+  }
   
   uint8_t *const new_backing = new uint8_t[new_size];
   

@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
     return 1;
   }
   
+  register_signal_handlers();
   while(!should_exit())
   {
     spinner::spin_once();

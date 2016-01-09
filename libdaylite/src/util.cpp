@@ -11,11 +11,10 @@ static void sig(int n)
   exit__ = true;
 }
 
-__attribute__((constructor)) static void register_signal_handler()
+void daylite::register_signal_handlers()
 {
-  signal(SIGINT, sig);
+  signal(SIGINT, sig); 
 }
-
 
 
 bool daylite::should_exit()

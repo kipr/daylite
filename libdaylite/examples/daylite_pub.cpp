@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
   
   
   uint32_t i = 0;
+  register_signal_handlers();
   while(!should_exit())
   {
     string_msg msg;

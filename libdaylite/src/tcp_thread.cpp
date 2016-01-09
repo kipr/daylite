@@ -139,7 +139,7 @@ void tcp_thread::run()
       
       l->update();
       
-      for(uint32_t i = 0; i < 10U; ++i)
+      for(uint32_t i = 0; i < 100U; ++i)
       {
         auto in = l->input();
         // other side is gone...
@@ -171,9 +171,10 @@ void tcp_thread::run()
 
 void tcp_thread::update_sleep(const uint16_t new_packet_count)
 {
-  const static uint16_t max_sleep = 20000U;
-  const static uint16_t min_sleep = 2000U;
+  const static uint16_t max_sleep = 5000U;
+  const static uint16_t min_sleep = 1000U;
   const uint16_t temporal_packet_distance = new_packet_count ? _sleep / new_packet_count : max_sleep;
   _sleep = std::max(temporal_packet_distance, min_sleep) * 0.1 + _sleep * 0.9;
+  
   usleep(_sleep);
 }

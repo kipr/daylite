@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     print_bson(msg);
     });
 
+  register_signal_handlers();
   while(!should_exit())
   {
     usleep(1000U);
