@@ -26,6 +26,9 @@ namespace daylite
     packet next(transport *const socket);
     void_result send(transport *const socket, const packet &p);
 
+    size_t in_queue_count() const;
+    size_t out_queue_count() const;
+
     void exit();
     
     uint16_t sleep_duration() const { return _sleep; }
@@ -35,7 +38,7 @@ namespace daylite
     {
       buffer();
       
-      std::mutex mut;
+      mutable std::mutex mut;
       std::unordered_map<std::string, std::deque<packet>> topic_queues;
       std::deque<packet> in;
       std::unordered_set<std::string> in_firehose;
@@ -47,7 +50,7 @@ namespace daylite
     void run();
     void update_sleep(const uint16_t new_packet_count);
     
-    std::mutex _mut;
+    mutable std::mutex _mut;
     std::unordered_map<transport *, std::unique_ptr<buffer>> _buffers;
     std::thread _thread;
     uint16_t _sleep;

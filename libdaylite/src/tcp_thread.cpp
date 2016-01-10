@@ -99,6 +99,32 @@ void_result tcp_thread::send(transport *const socket, const packet &p)
   return success();
 }
 
+size_t tcp_thread::in_queue_count() const
+{
+  size_t ret = 0;
+  _mut.lock();
+  for(auto it = _buffers.begin(); it != _buffers.end(); ++it)
+  {
+    lock_guard<mutex> lock(it->second->mut);
+    ret += it->second->in.size();
+  }
+  _mut.unlock();
+  return ret;
+}
+
+size_t tcp_thread::out_queue_count() const
+{
+  size_t ret = 0;
+  _mut.lock();
+  for(auto it = _buffers.begin(); it != _buffers.end(); ++it)
+  {
+    lock_guard<mutex> lock(it->second->mut);
+    ret += it->second->out.size();
+  }
+  _mut.unlock();
+  return ret;
+}
+
 void tcp_thread::exit()
 {
   _exit = true;

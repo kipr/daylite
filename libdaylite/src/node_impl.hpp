@@ -69,6 +69,9 @@ namespace daylite
     
     uint32_t thread_sleep_duration() const { return _thread.sleep_duration(); }
     
+    virtual size_t out_queue_count() const { return _thread.out_queue_count(); }
+    virtual size_t in_queue_count() const { return _thread.in_queue_count(); }
+    
     void set_auto_exit(const bool auto_exit) { _auto_exit = auto_exit; }
     bool auto_exit() const { return _auto_exit; }
 

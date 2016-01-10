@@ -32,6 +32,9 @@ namespace daylite
       
     virtual uint32_t thread_sleep_duration() const = 0;
     
+    virtual size_t out_queue_count() const = 0;
+    virtual size_t in_queue_count() const = 0;
+    
     virtual void set_auto_exit(const bool auto_exit) = 0;
     virtual bool auto_exit() const = 0;
   };
