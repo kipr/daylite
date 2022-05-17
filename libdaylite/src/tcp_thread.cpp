@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <string>
 #include <mutex>
+#include <cassert>
 
 using namespace daylite;
 using namespace std;
